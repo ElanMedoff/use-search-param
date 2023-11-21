@@ -1,0 +1,15 @@
+{
+  "name": "use-search-param",
+  "version": "0.0.0",
+  "description": "",
+  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElanMedoff/use-search-param"
+  },
+  "bugs": {
+    "url": "https://github.com/ElanMedoff/use-search-param/issues"
+  },
+  "homepage": "https://github.com/ElanMedoff/use-search-param#readme",
+  "license": "MIT"
+}
