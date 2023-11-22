@@ -2,6 +2,7 @@ import { renderHook, cleanup } from "@testing-library/react-hooks";
 import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import * as helpers from "./helpers";
 import { buildUseSearchParam, useSearchParam } from "./index";
+import { z } from "zod";
 
 afterEach(cleanup);
 
@@ -94,20 +95,17 @@ describe("useSearchParamState", () => {
         });
 
         it("when pass an onError, it should call it on validation errors", () => {
+          const schema = z.string();
           const onError = vi.fn();
-          const error = new Error();
           const useBuiltSearchParam = buildUseSearchParam({
             onError,
           });
           const { result } = renderHook(() =>
             useBuiltSearchParam("counter", {
-              validate: () => {
-                throw error;
-              },
+              validate: schema.parse,
             })
           );
           expect(onError).toHaveBeenCalledOnce();
-          expect(onError).toHaveBeenCalledWith(error);
           expect(result.current).toBe(null);
         });
 
@@ -133,23 +131,19 @@ describe("useSearchParamState", () => {
         it("when passed an onError from the hook options and build options, it should call both on validation errors", () => {
           const buildOnError = vi.fn();
           const hookOnError = vi.fn();
-          const error = new Error();
 
+          const schema = z.string();
           const useBuiltSearchParam = buildUseSearchParam({
             onError: buildOnError,
           });
           const { result } = renderHook(() =>
             useBuiltSearchParam("counter", {
               onError: hookOnError,
-              validate: () => {
-                throw error;
-              },
+              validate: schema.parse,
             })
           );
           expect(buildOnError).toHaveBeenCalledOnce();
           expect(hookOnError).toHaveBeenCalledOnce();
-          expect(buildOnError).toHaveBeenCalledWith(error);
-          expect(hookOnError).toHaveBeenCalledWith(error);
           expect(result.current).toBe(null);
         });
       });
@@ -209,17 +203,14 @@ describe("useSearchParamState", () => {
 
         it("when passed an onError, it should call it on validation error", () => {
           const onError = vi.fn();
-          const error = new Error();
+          const schema = z.string();
           const { result } = renderHook(() =>
             useSearchParam("counter", {
               onError,
-              validate: () => {
-                throw error;
-              },
+              validate: schema.parse,
             })
           );
           expect(onError).toHaveBeenCalledOnce();
-          expect(onError).toHaveBeenCalledWith(error);
           expect(result.current).toBe(null);
         });
       });

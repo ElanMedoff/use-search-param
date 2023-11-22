@@ -1,6 +1,6 @@
 {
   "name": "use-search-param",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -32,12 +32,12 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.4",
-    "@vitejs/plugin-react": "^4.1.0",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/node": "^20.8.2",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@vitejs/plugin-react": "^4.1.0",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-standard-with-typescript": "^39.1.0",
@@ -54,7 +54,8 @@
     "typescript": "^5.2.2",
     "vite": "^4.4.5",
     "vitest": "^0.34.6",
-    "vitest-dom": "^0.1.1"
+    "vitest-dom": "^0.1.1",
+    "zod": "^3.22.4"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

@@ -1,8 +1,8 @@
 # useSearchParam
 
-[![NPM](https://img.shields.io/badge/NPM-%23CB3837.svg?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/package/use-search-param)
-
-⚠️ Warning: a work in progress! ⚠️
+[![npm version](https://badge.fury.io/js/use-search-param.svg)](https://badge.fury.io/js/use-search-param)
+<a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/install/5224" title="Install size for use-search-param"></a>
+<a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/bundle/775" title="Bundle size for use-search-param"></a>
 
 `useSearchParam` provides a read-only interface to safely, reliably and effortlessly interact with URL search params.
 
@@ -25,7 +25,7 @@ interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T;
-  onError?: (e: Error) => void;
+  onError?: (e: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
 }
 ```

@@ -5,14 +5,12 @@ interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T;
-  onError?: (e: Error) => void;
+  onError?: (e: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
 }
 
 // TODO:
 // 1. react to url changes
-// 2. combine parse and validate? combine onValidateError and onError?
-// 3. improve readme, demos etc
 
 type BuildSearchParamOptions = Pick<
   UseSearchParamOptions<unknown>,
