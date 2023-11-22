@@ -28,7 +28,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
     const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
     const { validate } = hookOptions;
 
-    function getSearch() {
+    const getSearch = React.useCallback(() => {
       if (isWindowUndefined()) {
         if (serverSideSearchParams instanceof URLSearchParams) {
           return serverSideSearchParams.toString();
@@ -39,9 +39,9 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
         return null;
       }
       return window.location.search;
-    }
+    }, [serverSideSearchParams]);
 
-    function getSearchParamVal(): T | null {
+    const getSearchParamVal = React.useCallback((): T | null => {
       try {
         const search = getSearch();
         if (search === null) {
@@ -68,9 +68,21 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
         hookOptions.onError?.(e);
         return null;
       }
-    }
+    }, [getSearch, searchParam]);
 
-    const [searchParamVal] = React.useState<T | null>(() =>
+    React.useEffect(() => {
+      const reactToPopState = () => {
+        setSearchParamVal(getSearchParamVal());
+      };
+
+      window.addEventListener("popstate", reactToPopState);
+
+      return () => {
+        window.removeEventListener("popstate", reactToPopState);
+      };
+    }, [getSearchParamVal]);
+
+    const [searchParamVal, setSearchParamVal] = React.useState<T | null>(() =>
       getSearchParamVal()
     );
 

@@ -74,7 +74,7 @@ export function defaultParse(unparsed: string) {
 
 ---
 
-You can also "build" the hook yourself to implicitly pass `sanitized` and `onError` options to every instance of `useSearchParam`:
+You can also "build" the hook yourself to implicitly pass `sanitize` and `onError` options to every instance of `useSearchParam`:
 
 ```tsx
 import { buildUseSearchParam } from "use-search-param";

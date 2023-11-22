@@ -217,7 +217,24 @@ describe("useSearchParamState", () => {
     });
   });
 
-  describe.skip("on url changes", () => {
-    // TODO
+  describe("on popstate events", () => {
+    beforeEach(() => {
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { search: "?counter=1" },
+      });
+    });
+
+    it("should update the state", () => {
+      const { result } = renderHook(() => useSearchParam("counter"));
+      expect(result.current).toBe(1);
+
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { search: "?counter=2" },
+      });
+      dispatchEvent(new Event("popstate"));
+      expect(result.current).toBe(2);
+    });
   });
 });
