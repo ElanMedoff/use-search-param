@@ -1,13 +1,12 @@
 import React from "react";
-import { isWindowUndefined } from "./helpers";
+import { defaultParse, isWindowUndefined } from "./helpers";
 
 interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T;
-  onValidateError?: (e: unknown) => void;
-  onError?: (e: unknown) => void;
-  serverSideHref?: string;
+  onError?: (e: Error) => void;
+  serverSideSearchParams?: string | URLSearchParams;
 }
 
 // TODO:
@@ -17,7 +16,7 @@ interface UseSearchParamOptions<T> {
 
 type BuildSearchParamOptions = Pick<
   UseSearchParamOptions<unknown>,
-  "onError" | "sanitize" | "onValidateError"
+  "onError" | "sanitize"
 >;
 
 function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
@@ -25,37 +24,33 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
     searchParam: string,
     hookOptions: UseSearchParamOptions<T> = {}
   ) {
-    const parse = hookOptions.parse ?? ((val: string) => JSON.parse(val) as T);
-    const serverSideHref = hookOptions.serverSideHref;
+    const parse =
+      hookOptions.parse ?? (defaultParse as (unparsed: string) => T);
+    const { serverSideSearchParams } = hookOptions;
     const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
     const { validate } = hookOptions;
 
-    function getHref() {
+    function getSearch() {
       if (isWindowUndefined()) {
-        return serverSideHref ?? null;
-      }
-      return window.location.href;
-    }
-
-    function wrappedValidate(val: unknown): T | null {
-      try {
-        return validate instanceof Function ? validate(val) : (val as T);
-      } catch (e) {
-        buildOptions?.onValidateError?.(e);
-        hookOptions?.onValidateError?.(e);
+        if (serverSideSearchParams instanceof URLSearchParams) {
+          return serverSideSearchParams.toString();
+        }
+        if (typeof serverSideSearchParams === "string") {
+          return serverSideSearchParams;
+        }
         return null;
       }
+      return window.location.search;
     }
 
     function getSearchParamVal(): T | null {
       try {
-        const href = getHref();
-        if (href === null) {
+        const search = getSearch();
+        if (search === null) {
           return null;
         }
 
-        const url = new URL(href);
-        const urlParams = url.searchParams;
+        const urlParams = new URLSearchParams(search);
         const initialParamVal = urlParams.get(searchParam);
         if (initialParamVal === null) {
           return null;
@@ -66,7 +61,8 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
             ? sanitize(initialParamVal)
             : initialParamVal;
         const parsedVal = parse(sanitizedVal);
-        const validatedVal = wrappedValidate(parsedVal);
+        const validatedVal =
+          validate instanceof Function ? validate(parsedVal) : parsedVal;
 
         return validatedVal;
       } catch (e) {
