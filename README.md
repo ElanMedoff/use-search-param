@@ -1,8 +1,8 @@
 # useSearchParam
 
 [![npm version](https://badge.fury.io/js/use-search-param.svg)](https://badge.fury.io/js/use-search-param)
-<a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/install/5224" title="Install size for use-search-param"></a>
-<a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/bundle/775" title="Bundle size for use-search-param"></a>
+<a href="https://pkg-size.dev/use-search-param"><img src="https://pkg-size.dev/badge/install/4937724" title="Install size for use-search-param"></a>
+<a href="https://pkg-size.dev/use-search-param"><img src="https://pkg-size.dev/badge/bundle/8132" title="Bundle size for use-search-param"></a>
 
 `useSearchParam` provides a read-only interface to safely, reliably and effortlessly interact with URL search params.
 
