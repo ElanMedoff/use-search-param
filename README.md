@@ -1,12 +1,14 @@
 # useSearchParam
 
+`useSearchParam` provides a read-only interface to safely, reliably and easily interact with URL search params.
+
+---
+
 [![npm version](https://badge.fury.io/js/use-search-param.svg)](https://badge.fury.io/js/use-search-param)
 <a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/install/10098" title="Install size for use-search-param"></a>
 <a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/bundle/1046" title="Bundle size for use-search-param"></a>
 
-`useSearchParam` provides a read-only interface to safely, reliably and easily interact with URL search params.
-
-### Basic usage
+## Basic usage
 
 ```tsx
 import { useSearchParam } from "use-search-param";
@@ -30,7 +32,7 @@ function Demo() {
 }
 ```
 
-### Options
+## Options
 
 `useSearchParam` accepts the following options:
 
@@ -60,7 +62,7 @@ function useSearchParam(searchParam, options) {
 }
 ```
 
-#### `sanitize`
+### `sanitize`
 
 A function with the following call signature: `(unsanitized: string) => string`.
 
@@ -70,7 +72,7 @@ A function with the following call signature: `(unsanitized: string) => string`.
 
 `sanitize` has no default value.
 
-#### `parse`
+### `parse`
 
 A function with the following call signature: `(unparsed: string) => T`.
 
@@ -96,7 +98,7 @@ export function defaultParse(unparsed: string) {
 }
 ```
 
-#### `validate`
+### `validate`
 
 A function with the following call signature: `(unvalidated: unknown) => T`.
 
@@ -104,7 +106,7 @@ The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
 `validate` has no default value.
 
-#### `onError`
+### `onError`
 
 A function with the following call signature: `(e: unknown) => void`.
 
@@ -112,7 +114,7 @@ Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError
 
 `onError` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When an `onError` option is passed to both, both the functions will be called.
 
-#### `serverSideSearchParams`
+### `serverSideSearchParams`
 
 A value of type `string` or `URLSearchParams`.
 
@@ -143,7 +145,7 @@ export default function Home({
 
 Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
 
-### "Building" `useSearchParam`
+## "Building" `useSearchParam`
 
 You can also build the hook yourself to implicitly pass `sanitize` and `onError` options to every instance of `useSearchParam`:
 
