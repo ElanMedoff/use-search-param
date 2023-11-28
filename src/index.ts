@@ -9,9 +9,6 @@ interface UseSearchParamOptions<T> {
   serverSideSearchParams?: string | URLSearchParams;
 }
 
-// TODO:
-// 1. react to url changes
-
 type BuildSearchParamOptions = Pick<
   UseSearchParamOptions<unknown>,
   "onError" | "sanitize"
@@ -41,7 +38,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
       return window.location.search;
     }, [serverSideSearchParams]);
 
-    const getSearchParamVal = React.useCallback((): T | null => {
+    const getSearchParam = React.useCallback((): T | null => {
       try {
         const search = getSearch();
         if (search === null) {
@@ -49,20 +46,20 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
         }
 
         const urlParams = new URLSearchParams(search);
-        const initialParamVal = urlParams.get(searchParam);
-        if (initialParamVal === null) {
+        const rawSearchParam = urlParams.get(searchParam);
+        if (rawSearchParam === null) {
           return null;
         }
 
-        const sanitizedVal =
+        const sanitized =
           sanitize instanceof Function
-            ? sanitize(initialParamVal)
-            : initialParamVal;
-        const parsedVal = parse(sanitizedVal);
-        const validatedVal =
-          validate instanceof Function ? validate(parsedVal) : parsedVal;
+            ? sanitize(rawSearchParam)
+            : rawSearchParam;
+        const parsed = parse(sanitized);
+        const validated =
+          validate instanceof Function ? validate(parsed) : parsed;
 
-        return validatedVal;
+        return validated;
       } catch (e) {
         buildOptions.onError?.(e);
         hookOptions.onError?.(e);
@@ -72,7 +69,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
 
     React.useEffect(() => {
       const reactToPopState = () => {
-        setSearchParamVal(getSearchParamVal());
+        setSearchParamVal(getSearchParam());
       };
 
       window.addEventListener("popstate", reactToPopState);
@@ -80,10 +77,10 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
       return () => {
         window.removeEventListener("popstate", reactToPopState);
       };
-    }, [getSearchParamVal]);
+    }, [getSearchParam]);
 
     const [searchParamVal, setSearchParamVal] = React.useState<T | null>(() =>
-      getSearchParamVal()
+      getSearchParam()
     );
 
     return searchParamVal;

@@ -4,7 +4,7 @@
 <a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/install/10098" title="Install size for use-search-param"></a>
 <a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/bundle/1046" title="Bundle size for use-search-param"></a>
 
-`useSearchParam` provides a read-only interface to safely, reliably and effortlessly interact with URL search params.
+`useSearchParam` provides a read-only interface to safely, reliably and easily interact with URL search params.
 
 ### Basic usage
 
@@ -13,6 +13,20 @@ import { useSearchParam } from "use-search-param";
 
 function Demo() {
   const counter = useSearchParam<number>("counter");
+}
+```
+
+or
+
+```tsx
+import { useSearchParam } from "use-search-param";
+import { z } from "zod";
+
+function Demo() {
+  const schema = z.number();
+  const counter = useSearchParam<number>("counter", {
+    validate: schema.parse,
+  });
 }
 ```
 
@@ -30,29 +44,39 @@ interface UseSearchParamOptions<T> {
 }
 ```
 
-For example:
+Note that `sanitize`, `parse`, and `validate` run in the following order:
 
 ```tsx
-import { useSearchParam } from "use-search-param";
-import { z } from "zod";
+// simplified
+function useSearchParam(searchParam, options) {
+  const rawSearchParam = new URLSearchParams(window.location.search).get(
+    searchParam
+  );
+  const sanitized = options.sanitize(rawSearchParam);
+  const parsed = options.parse(sanitized);
+  const validated = options.validate(parsed);
 
-function Demo() {
-  const schema = z.number();
-  const counter = useSearchParam<number>("counter", {
-    validate: schema.parse,
-  });
+  return validated;
 }
 ```
 
-Note that `validate` runs _after_ `parse` and expects an argument that's already been "hydrated" from the search param string. More specifically, `sanitize`, `parse`, and `validate` run in the following order:
+#### `sanitize`
 
-```tsx
-const sanitizedVal = sanitize(searchParam);
-const parsedVal = parse(sanitizedVal);
-const validatedVal = wrappedValidate(parsedVal);
-```
+A function with the following call signature: `(unsanitized: string) => string`.
 
-Note that `sanitize` and `validate` have no default value, while `parse` defaults to the following function:
+`sanitize` is called with the raw string pulled from the URL search param.
+
+`sanitize` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When a `sanitize` option is passed to both, only the `sanitize` passed to `useSearchParam` will be called.
+
+`sanitize` has no default value.
+
+#### `parse`
+
+A function with the following call signature: `(unparsed: string) => T`.
+
+The result of `sanitize` is passed as the `unparsed` argument to `parse`.
+
+`parse` defaults to the following function:
 
 ```ts
 export function defaultParse(unparsed: string) {
@@ -72,29 +96,27 @@ export function defaultParse(unparsed: string) {
 }
 ```
 
----
+#### `validate`
 
-You can also "build" the hook yourself to implicitly pass `sanitize` and `onError` options to every instance of `useSearchParam`:
+A function with the following call signature: `(unvalidated: unknown) => T`.
 
-```tsx
-import { buildUseSearchParam } from "use-search-param";
+The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
-// import this instance of `useSearchParam` in your components
-export const useSearchParam = buildUseSearchParam({
-  onError: () => {
-    // call sentry
-  },
-  sanitize: (unsanitized) => {
-    return yourSanitizer(unsanitized);
-  },
-});
-```
+`validate` has no default value.
 
-When `sanitize` is passed to `buildUseSearchParam` and `useSearchParam`, the option passed to `useSearchParam` takes precendence. However, when `onError` is passed to `buildUseSearchParam` and `useSearchParam`, both `onError`s are called.
+#### `onError`
 
-### Running on the server
+A function with the following call signature: `(e: unknown) => void`.
 
-`useSearchParam` can be passed a `serverSideSearchParams` option to use when `window.location.search` is unavailable. This is useful for generating content on the server, i.e. with Next.js:
+Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError` is called whenever the `catch` block is reached. This includes situations when `sanitize`, `parse`, or `validate` throw an error.
+
+`onError` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When an `onError` option is passed to both, both the functions will be called.
+
+#### `serverSideSearchParams`
+
+A value of type `string` or `URLSearchParams`.
+
+When passed, `serverSideSearchParams` will be used when `window` is `undefined` to access the search params. This is useful for generating content on the server, i.e. with Next.js:
 
 ```tsx
 import url from "url";
@@ -117,4 +139,19 @@ export default function Home({
   // has the correct value for `counter` when rendered on the server
   return <div>counter: {counter}</div>;
 }
+```
+
+Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
+
+### "Building" `useSearchParam`
+
+You can also build the hook yourself to implicitly pass `sanitize` and `onError` options to every instance of `useSearchParam`:
+
+```tsx
+import { buildUseSearchParam } from "use-search-param";
+
+// import this instance of `useSearchParam` in your components
+export const useSearchParam = buildUseSearchParam({
+  sanitize: (unsanitized) => yourSanitizer(unsanitized),
+});
 ```
