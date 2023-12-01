@@ -15,8 +15,10 @@ export default defineConfig({
     rollupOptions: {
       plugins: [
         typescript({
-          declaration: true,
-          outDir: "./dist",
+          compilerOptions: {
+            declaration: true,
+            outDir: "./dist",
+          },
           include: "./src/index.ts",
         }),
         react(),
