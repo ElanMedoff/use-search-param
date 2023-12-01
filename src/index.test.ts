@@ -27,7 +27,7 @@ describe("useSearchParamState", () => {
         const { result } = renderHook(() =>
           useSearchParam("counter", {
             serverSideSearchParams: "?counter=1",
-          })
+          }),
         );
         expect(result.current).toBe(1);
       });
@@ -36,7 +36,7 @@ describe("useSearchParamState", () => {
         const { result } = renderHook(() =>
           useSearchParam("counter", {
             serverSideSearchParams: new URLSearchParams("?counter=1"),
-          })
+          }),
         );
         expect(result.current).toBe(1);
       });
@@ -103,7 +103,7 @@ describe("useSearchParamState", () => {
           const { result } = renderHook(() =>
             useBuiltSearchParam("counter", {
               validate: schema.parse,
-            })
+            }),
           );
           expect(onError).toHaveBeenCalledOnce();
           expect(result.current).toBe(null);
@@ -121,7 +121,7 @@ describe("useSearchParamState", () => {
           const { result } = renderHook(() =>
             useBuiltSearchParam("counter", {
               onError: hookOnError,
-            })
+            }),
           );
           expect(buildOnError).toHaveBeenCalledOnce();
           expect(hookOnError).toHaveBeenCalledOnce();
@@ -140,7 +140,7 @@ describe("useSearchParamState", () => {
             useBuiltSearchParam("counter", {
               onError: hookOnError,
               validate: schema.parse,
-            })
+            }),
           );
           expect(buildOnError).toHaveBeenCalledOnce();
           expect(hookOnError).toHaveBeenCalledOnce();
@@ -162,7 +162,7 @@ describe("useSearchParamState", () => {
           const { result } = renderHook(() =>
             useSearchParam("counter", {
               sanitize: (unsanitized) => `${unsanitized}2`,
-            })
+            }),
           );
           expect(result.current).toBe(12);
         });
@@ -171,7 +171,7 @@ describe("useSearchParamState", () => {
           const { result } = renderHook(() =>
             useSearchParam("counter", {
               parse: (unparsed) => JSON.parse(unparsed) + 1,
-            })
+            }),
           );
           expect(result.current).toBe(2);
         });
@@ -180,7 +180,7 @@ describe("useSearchParamState", () => {
           const { result } = renderHook(() =>
             useSearchParam("counter", {
               validate: (unvalidated) => (unvalidated as number) + 1,
-            })
+            }),
           );
           expect(result.current).toBe(2);
         });
@@ -195,7 +195,7 @@ describe("useSearchParamState", () => {
               sanitize: () => {
                 throw new Error();
               },
-            })
+            }),
           );
           expect(onError).toHaveBeenCalledOnce();
           expect(result.current).toBe(null);
@@ -208,7 +208,7 @@ describe("useSearchParamState", () => {
             useSearchParam("counter", {
               onError,
               validate: schema.parse,
-            })
+            }),
           );
           expect(onError).toHaveBeenCalledOnce();
           expect(result.current).toBe(null);

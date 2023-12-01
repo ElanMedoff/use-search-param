@@ -17,7 +17,7 @@ type BuildSearchParamOptions = Pick<
 function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
   return function useSearchParam<T>(
     searchParam: string,
-    hookOptions: UseSearchParamOptions<T> = {}
+    hookOptions: UseSearchParamOptions<T> = {},
   ) {
     const parse =
       hookOptions.parse ?? (defaultParse as (unparsed: string) => T);
@@ -80,7 +80,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
     }, [getSearchParam]);
 
     const [searchParamVal, setSearchParamVal] = React.useState<T | null>(() =>
-      getSearchParam()
+      getSearchParam(),
     );
 
     return searchParamVal;
