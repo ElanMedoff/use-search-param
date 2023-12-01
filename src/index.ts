@@ -4,7 +4,7 @@ import { defaultParse, isWindowUndefined } from "./helpers";
 interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
-  validate?: (unvalidated: unknown) => T;
+  validate?: (unvalidated: unknown) => T | null;
   onError?: (e: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
 }

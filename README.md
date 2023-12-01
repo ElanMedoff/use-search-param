@@ -40,7 +40,7 @@ function Demo() {
 interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
-  validate?: (unvalidated: unknown) => T;
+  validate?: (unvalidated: unknown) => T | null;
   onError?: (e: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
 }
@@ -50,21 +50,19 @@ Note that `sanitize`, `parse`, and `validate` run in the following order:
 
 ```tsx
 // simplified
-function useSearchParam(searchParam, options) {
-  const rawSearchParam = new URLSearchParams(window.location.search).get(
-    searchParam
-  );
-  const sanitized = options.sanitize(rawSearchParam);
-  const parsed = options.parse(sanitized);
-  const validated = options.validate(parsed);
+const rawSearchParam = new URLSearchParams(window.location.search).get(
+  searchParam
+);
+const sanitized = options.sanitize(rawSearchParam);
+const parsed = options.parse(sanitized);
+const validated = options.validate(parsed);
 
-  return validated;
-}
+return validated;
 ```
 
 ### `sanitize`
 
-A function with the following call signature: `(unsanitized: string) => string`.
+A function with the following type: `(unsanitized: string) => string`.
 
 `sanitize` is called with the raw string pulled from the URL search param.
 
@@ -74,7 +72,7 @@ A function with the following call signature: `(unsanitized: string) => string`.
 
 ### `parse`
 
-A function with the following call signature: `(unparsed: string) => T`.
+A function with the following type: `(unparsed: string) => T`.
 
 The result of `sanitize` is passed as the `unparsed` argument to `parse`.
 
@@ -100,15 +98,17 @@ export function defaultParse(unparsed: string) {
 
 ### `validate`
 
-A function with the following call signature: `(unvalidated: unknown) => T`.
+A function with the following type: `(unvalidated: unknown) => T | null`.
 
 The result of `parse` is passed as the `unvalidated` argument to `validate`.
+
+`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
 
 `validate` has no default value.
 
 ### `onError`
 
-A function with the following call signature: `(e: unknown) => void`.
+A function with the following type: `(e: unknown) => void`.
 
 Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError` is called whenever the `catch` block is reached. This includes situations when `sanitize`, `parse`, or `validate` throw an error.
 
