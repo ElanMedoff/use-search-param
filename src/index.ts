@@ -21,8 +21,8 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
   ) {
     const parse =
       hookOptions.parse ??
-      (buildOptions.parse as UseSearchParamOptions<T>["parse"]) ??
-      (defaultParse as UseSearchParamOptions<T>["parse"]);
+      (buildOptions.parse as Required<UseSearchParamOptions<T>>["parse"]) ??
+      (defaultParse as Required<UseSearchParamOptions<T>>["parse"]);
     const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
     const { validate, serverSideSearchParams } = hookOptions;
 
