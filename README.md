@@ -1,6 +1,6 @@
 # useSearchParam
 
-`useSearchParam` provides a read-only interface to safely, reliably and easily interact with URL search params.
+A React hook to safely and easily read from URL search params.
 
 ---
 
@@ -51,7 +51,7 @@ Note that `sanitize`, `parse`, and `validate` run in the following order:
 ```tsx
 // simplified
 const rawSearchParam = new URLSearchParams(window.location.search).get(
-  searchParam
+  searchParam,
 );
 const sanitized = options.sanitize(rawSearchParam);
 const parsed = options.parse(sanitized);
@@ -75,6 +75,8 @@ A function with the following type: `(unsanitized: string) => string`.
 A function with the following type: `(unparsed: string) => T`.
 
 The result of `sanitize` is passed as the `unparsed` argument to `parse`.
+
+`parse` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When a `parse` option is passed to both, only the `parse` passed to `useSearchParam` will be called.
 
 `parse` defaults to the following function:
 

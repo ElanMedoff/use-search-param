@@ -5,13 +5,13 @@ interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T | null;
-  onError?: (e: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
+  onError?: (e: unknown) => void;
 }
 
 type BuildSearchParamOptions = Pick<
   UseSearchParamOptions<unknown>,
-  "onError" | "sanitize"
+  "sanitize" | "parse" | "onError"
 >;
 
 function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
@@ -20,10 +20,11 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
     hookOptions: UseSearchParamOptions<T> = {},
   ) {
     const parse =
-      hookOptions.parse ?? (defaultParse as (unparsed: string) => T);
-    const { serverSideSearchParams } = hookOptions;
+      hookOptions.parse ??
+      (buildOptions.parse as UseSearchParamOptions<T>["parse"]) ??
+      (defaultParse as UseSearchParamOptions<T>["parse"]);
     const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
-    const { validate } = hookOptions;
+    const { validate, serverSideSearchParams } = hookOptions;
 
     const getSearch = React.useCallback(() => {
       if (isWindowUndefined()) {

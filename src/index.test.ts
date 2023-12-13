@@ -78,6 +78,38 @@ describe("useSearchParamState", () => {
           const { result } = renderHook(() => useBuiltSearchParam("counter"));
           expect(result.current).toBe(12);
         });
+
+        it("when passed a sanitize from the hook options and build options, it should call the hook option", () => {
+          const useBuiltSearchParam = buildUseSearchParam({
+            sanitize: (unsanitized) => `${unsanitized}2`,
+          });
+          const { result } = renderHook(() =>
+            useBuiltSearchParam("counter", {
+              sanitize: (unsanitized) => `${unsanitized}1`,
+            }),
+          );
+          expect(result.current).toBe(11);
+        });
+
+        it("when passed a parse option, it should use it", () => {
+          const useBuiltSearchParam = buildUseSearchParam({
+            parse: (unparsed) => JSON.parse(unparsed) + 1,
+          });
+          const { result } = renderHook(() => useBuiltSearchParam("counter"));
+          expect(result.current).toBe(2);
+        });
+
+        it("when passed a parse from the hook options and build options, it should call the hook option", () => {
+          const useBuiltSearchParam = buildUseSearchParam({
+            parse: (unparsed) => JSON.parse(unparsed) + 1,
+          });
+          const { result } = renderHook(() =>
+            useBuiltSearchParam("counter", {
+              parse: (unparsed) => JSON.parse(unparsed) + 2,
+            }),
+          );
+          expect(result.current).toBe(3);
+        });
       });
 
       describe("error options", () => {
