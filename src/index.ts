@@ -26,7 +26,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
     const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
     const { validate, serverSideSearchParams } = hookOptions;
 
-    const getSearch = React.useCallback(() => {
+    const maybeGetSearch = React.useCallback(() => {
       if (isWindowUndefined()) {
         if (serverSideSearchParams instanceof URLSearchParams) {
           return serverSideSearchParams.toString();
@@ -41,7 +41,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
 
     const getSearchParam = React.useCallback((): T | null => {
       try {
-        const search = getSearch();
+        const search = maybeGetSearch();
         if (search === null) {
           return null;
         }
@@ -66,7 +66,7 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
         hookOptions.onError?.(e);
         return null;
       }
-    }, [getSearch, searchParam]);
+    }, [maybeGetSearch, searchParam]);
 
     React.useEffect(() => {
       const reactToPopState = () => {
@@ -74,9 +74,13 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
       };
 
       window.addEventListener("popstate", reactToPopState);
+      window.addEventListener("pushstate", reactToPopState);
+      window.addEventListener("replacestate", reactToPopState);
 
       return () => {
         window.removeEventListener("popstate", reactToPopState);
+        window.removeEventListener("pushstate", reactToPopState);
+        window.removeEventListener("replacestate", reactToPopState);
       };
     }, [getSearchParam]);
 

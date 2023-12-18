@@ -249,7 +249,7 @@ describe("useSearchParamState", () => {
     });
   });
 
-  describe("on popstate events", () => {
+  describe("events", () => {
     beforeEach(() => {
       Object.defineProperty(window, "location", {
         writable: true,
@@ -257,16 +257,19 @@ describe("useSearchParamState", () => {
       });
     });
 
-    it("should update the state", () => {
-      const { result } = renderHook(() => useSearchParam("counter"));
-      expect(result.current).toBe(1);
+    it.each(["popstate", "pushstate", "replacestate"])(
+      "should update the state on the %s event",
+      (eventName) => {
+        const { result } = renderHook(() => useSearchParam("counter"));
+        expect(result.current).toBe(1);
 
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { search: "?counter=2" },
-      });
-      dispatchEvent(new Event("popstate"));
-      expect(result.current).toBe(2);
-    });
+        Object.defineProperty(window, "location", {
+          writable: true,
+          value: { search: "?counter=2" },
+        });
+        dispatchEvent(new Event(eventName));
+        expect(result.current).toBe(2);
+      },
+    );
   });
 });

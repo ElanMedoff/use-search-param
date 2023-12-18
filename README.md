@@ -4,9 +4,10 @@ A React hook to safely and easily read from URL search params.
 
 ---
 
-[![npm version](https://badge.fury.io/js/use-search-param.svg)](https://badge.fury.io/js/use-search-param)
-<a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/install/10098" title="Install size for use-search-param"></a>
-<a href="https://pkg-size.dev/use-search-param?no-peers"><img src="https://pkg-size.dev/badge/bundle/1046" title="Bundle size for use-search-param"></a>
+![npm](https://img.shields.io/npm/v/use-search-param)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/use-search-param)
+![npm](https://img.shields.io/npm/dw/use-search-param)
+![NPM](https://img.shields.io/npm/l/use-search-param)
 
 ## Basic usage
 
