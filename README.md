@@ -4,10 +4,10 @@ A React hook to safely and easily read from URL search params.
 
 ---
 
-![npm](https://img.shields.io/npm/v/use-search-param)
-![npm bundle size](https://img.shields.io/bundlephobia/minzip/use-search-param)
-![npm](https://img.shields.io/npm/dw/use-search-param)
-![NPM](https://img.shields.io/npm/l/use-search-param)
+[![npm](https://img.shields.io/npm/v/use-search-param)](https://www.npmjs.com/package/use-search-param)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/use-search-param)](https://bundlephobia.com/package/use-search-param)
+[![npm](https://img.shields.io/npm/dw/use-search-param)](https://www.npmjs.com/package/use-search-param)
+[![NPM](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
 
 ## Basic usage
 

@@ -62,5 +62,16 @@
   },
   "homepage": "https://github.com/ElanMedoff/use-search-param#readme",
   "license": "MIT",
-  "author": "Elan Medoff <info@elanmed.dev> (https://elanmed.dev/)"
+  "author": "Elan Medoff <info@elanmed.dev> (https://elanmed.dev/)",
+  "keywords": [
+    "react",
+    "url",
+    "search",
+    "param",
+    "params",
+    "parameter",
+    "parameters",
+    "hook",
+    "hooks"
+  ]
 }
