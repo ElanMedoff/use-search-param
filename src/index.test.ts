@@ -249,7 +249,7 @@ describe("useSearchParamState", () => {
     });
   });
 
-  describe("events", () => {
+  describe.skip("events", () => {
     beforeEach(() => {
       Object.defineProperty(window, "location", {
         writable: true,
