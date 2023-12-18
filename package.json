@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/ElanMedoff/use-search-param#readme",
   "license": "MIT",
+  "author": "Elan Medoff <info@elanmed.dev> (https://elanmed.dev/)",
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest run",
