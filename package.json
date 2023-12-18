@@ -14,16 +14,6 @@
   "files": [
     "dist"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ElanMedoff/use-search-param"
-  },
-  "bugs": {
-    "url": "https://github.com/ElanMedoff/use-search-param/issues"
-  },
-  "homepage": "https://github.com/ElanMedoff/use-search-param#readme",
-  "license": "MIT",
-  "author": "Elan Medoff <info@elanmed.dev> (https://elanmed.dev/)",
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest run",
@@ -62,5 +52,15 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ElanMedoff/use-search-param"
+  },
+  "bugs": {
+    "url": "https://github.com/ElanMedoff/use-search-param/issues"
+  },
+  "homepage": "https://github.com/ElanMedoff/use-search-param#readme",
+  "license": "MIT",
+  "author": "Elan Medoff <info@elanmed.dev> (https://elanmed.dev/)"
 }
