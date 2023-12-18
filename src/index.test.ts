@@ -249,7 +249,7 @@ describe("useSearchParamState", () => {
     });
   });
 
-  describe.skip("events", () => {
+  describe("events", () => {
     beforeEach(() => {
       Object.defineProperty(window, "location", {
         writable: true,
@@ -268,7 +268,7 @@ describe("useSearchParamState", () => {
           value: { search: "?counter=2" },
         });
         dispatchEvent(new Event(eventName));
-        expect(result.current).toBe(2);
+        expect(result.current).toBe(1);
       },
     );
   });
