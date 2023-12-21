@@ -14,4 +14,4 @@ git commit -m "chore: update to version $VERSION, update changelog"
 git push origin head
 
 npm run build
-npm run publish
+npm publish
