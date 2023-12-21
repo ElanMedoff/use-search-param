@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 1.4.0 - 2023-12-20
+
+### Added
+
+- Update `BuildSearchParamOptions` to `BuildUseSearchParamOptions`
+
 ## 1.3.0 - 2023-12-18
 
 ### Added
