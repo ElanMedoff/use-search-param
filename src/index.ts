@@ -9,12 +9,12 @@ interface UseSearchParamOptions<T> {
   onError?: (e: unknown) => void;
 }
 
-type BuildSearchParamOptions = Pick<
+type BuildUseSearchParamOptions = Pick<
   UseSearchParamOptions<unknown>,
   "sanitize" | "parse" | "onError"
 >;
 
-function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
+function buildUseSearchParam(buildOptions: BuildUseSearchParamOptions = {}) {
   return function useSearchParam<T>(
     searchParam: string,
     hookOptions: UseSearchParamOptions<T> = {},
@@ -95,4 +95,4 @@ function buildUseSearchParam(buildOptions: BuildSearchParamOptions = {}) {
 const useSearchParam = buildUseSearchParam();
 
 export { useSearchParam, buildUseSearchParam };
-export type { UseSearchParamOptions, BuildSearchParamOptions };
+export type { UseSearchParamOptions, BuildUseSearchParamOptions };

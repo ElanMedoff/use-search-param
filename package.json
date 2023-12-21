@@ -19,8 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest --watch",
     "prettier": "prettier src/** --write --config .prettierrc.json",
-    "lint": "eslint src/**",
-    "deploy": "npm run build && npm publish"
+    "lint": "eslint src/**"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.4",
