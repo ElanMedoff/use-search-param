@@ -43,7 +43,7 @@ interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T | null;
-  onError?: (e: unknown) => void;
+  onError?: (error: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
 }
 ```
@@ -112,7 +112,7 @@ The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
 ### `onError`
 
-A function with the following type: `(e: unknown) => void`.
+A function with the following type: `(error: unknown) => void`.
 
 Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError` is called whenever the `catch` block is reached. This includes situations when `sanitize`, `parse`, or `validate` throw an error.
 

@@ -2,11 +2,34 @@ import React from "react";
 import { defaultParse, isWindowUndefined } from "./helpers";
 
 interface UseSearchParamOptions<T> {
+  /**
+   * @param `unsanitized` The raw string pulled from the URL search param.
+   * @returns The sanitized string.
+   */
   sanitize?: (unsanitized: string) => string;
+  /**
+   * @param `unparsed` The result of `sanitize` is passed as the `unparsed` argument to `parse`.
+   * @returns A parsed value of the type `T`, i.e the type of `initialState`.
+   */
   parse?: (unparsed: string) => T;
+  /**
+   * `validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), throw an error, or return null. If an error is thrown, `onError` is called and `useSearchParamState` returns the initial state.
+   *
+   * @param `unvalidated` The result of `parse` is passed as the `unvalidated` argument to `validate`.
+   * @returns The `unvalidated` argument now validated as of type `T`, or `null`.
+   */
   validate?: (unvalidated: unknown) => T | null;
+  /**
+   * A value of type `string` or `URLSearchParams`.
+   *
+   * When passed, `serverSideSearchParams` will be used when `window` is `undefined` to access the URL search param. This is useful for generating content on the server, i.e. with Next.js.
+   */
   serverSideSearchParams?: string | URLSearchParams;
-  onError?: (e: unknown) => void;
+  /**
+   * @param `error` The error caught in one of `useSearchParamState`'s `try` `catch` blocks.
+   * @returns
+   */
+  onError?: (error: unknown) => void;
 }
 
 type BuildUseSearchParamOptions = Pick<
@@ -16,7 +39,17 @@ type BuildUseSearchParamOptions = Pick<
 
 function buildUseSearchParam(buildOptions: BuildUseSearchParamOptions = {}) {
   return function useSearchParam<T>(
+    /**
+     * The name of the URL search param to read from and write to.
+     *
+     * See MDN's documentation on [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) for more info.
+     */
     searchParam: string,
+    /**
+     * Options passed by a particular instance of `useSearchParamState`.
+     *
+     * When an option is passed to both `useSearchParamState` and `buildUseSearchParam`, only the option passed to `useSearchParamState` is respected. The exception is an `onError` option passed to both, in which case both `onError`s are called.
+     */
     hookOptions: UseSearchParamOptions<T> = {},
   ) {
     const parse =
