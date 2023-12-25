@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 1.4.1 - 2023-12-25
+
+### Fixed
+
+- Wrote comments on types for editor intellisense.
+
 ## 1.4.0 - 2023-12-20
 
 ### Added
@@ -31,7 +37,6 @@
 ### Fixed
 
 - Update `validate` option to return `T | null`
-- Generate types with `vite build` directly
 
 ## 1.1.2 - 2023-11-27
 
