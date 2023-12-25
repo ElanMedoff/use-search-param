@@ -16,7 +16,7 @@ A React hook to safely and easily read from URL search params.
 import { useSearchParam } from "use-search-param";
 
 function Demo() {
-  const counter = useSearchParam<number>("counter");
+  const counter = useSearchParam<number>("c");
 }
 ```
 
@@ -28,11 +28,25 @@ import { z } from "zod";
 
 function Demo() {
   const schema = z.number();
-  const counter = useSearchParam<number>("counter", {
+  const counter = useSearchParam<number>("c", {
     validate: schema.parse,
   });
 }
 ```
+
+## Explanation
+
+On the first render, `useSearchParam` will set `counter` to the value read from the `c` URL search param.
+
+By default, the `c` search param is read using `window.location.search`. If the `window` object is `undefined`, `useSearchParam` will use the `serverSideSearchParams` instead to read from the URL. If `serverSideSearchParams` is also not provided, `counter` will be set to `null`.
+
+If the `c` search param does not exist, `counter` will be set to `null`.
+
+Once the `c` search param is accessed, the raw string is passed to `sanitize`, the output of `sanitize` is passed to `parse`, and finally the output of `parse` is passed to `validate`. Note that `useSearchParam` aims to return a _parsed_ value, not a string!
+
+If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is called, and `counterVal` is set to `null`. Additionally if `validate` returns `null`, `counter` will be set to `null`.
+
+If none of `sanitize`, `parse`, and `validate` throw an error, `counterVal` is set to the sanitized, parsed, and validated value in the `counter` search param.
 
 ## Options
 
