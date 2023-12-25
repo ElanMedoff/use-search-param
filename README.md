@@ -8,7 +8,7 @@ A React hook to safely and easily read from URL search params.
 [![NPM](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
 [![Static Badge](https://img.shields.io/badge/dependencies%20-%200%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
 
-![image](https://elanmed.dev/npm-packages/use-search-param-logo.png)
+<img src="https://elanmed.dev/npm-packages/use-search-param-logo.png" style="padding: 3%; max-width: 600px; width: 100%; display: block; margin: auto;" />
 
 ## Basic usage
 
