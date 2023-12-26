@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 1.4.2 - 2023-12-26
+
+### Fixed
+
+- Added detailed explanation section to the README.
+
 ## 1.4.1 - 2023-12-25
 
 ### Fixed
@@ -18,7 +24,7 @@
 
 ### Added
 
-- Update `BuildSearchParamOptions` to `BuildUseSearchParamOptions`
+- Update `BuildSearchParamOptions` to `BuildUseSearchParamOptions`.
 
 ## 1.3.0 - 2023-12-18
 
@@ -30,25 +36,25 @@
 
 ### Added
 
-- Add `parse` as a build option
+- Add `parse` as a build option.
 
 ## 1.1.3 - 2023-11-30
 
 ### Fixed
 
-- Update `validate` option to return `T | null`
+- Update `validate` option to return `T | null`.
 
 ## 1.1.2 - 2023-11-27
 
 ### Fixed
 
-- Cleanup README
+- Cleanup README styles.
 
 ## 1.1.1 - 2023-11-27
 
 ### Fixed
 
-- Cleanup variable names
+- Add documentation on options to the README.
 
 ## 1.1.0 - 2023-11-21
 
