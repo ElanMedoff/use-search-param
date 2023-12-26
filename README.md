@@ -43,7 +43,7 @@ On the first render, `useSearchParam` will set `counter` to the value read from 
 
 By default, the `c` search param is read using `window.location.search`. If the `window` object is `undefined`, `useSearchParam` will use the `serverSideSearchParams` instead to read from the URL. If `serverSideSearchParams` is also not provided, `counter` will be set to `null`.
 
-If the `c` search param does not exist, `counter` will be set to `null`.
+If the `c` search param does not exist (i.e. `URLSearchParams.get` returns `null`), `counter` will be set to `null`.
 
 Once the `c` search param is accessed, the raw string is passed to `sanitize`, the output of `sanitize` is passed to `parse`, and finally the output of `parse` is passed to `validate`. Note that `useSearchParam` aims to return a _parsed_ value, not a _stringified_ value!
 
