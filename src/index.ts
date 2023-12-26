@@ -8,14 +8,14 @@ interface UseSearchParamOptions<T> {
    */
   sanitize?: (unsanitized: string) => string;
   /**
-   * @param `unparsed` The result of `sanitize` is passed as the `unparsed` argument to `parse`.
+   * @param `unparsed` The result of `sanitize` is passed as `unparsed`.
    * @returns A parsed value of the type `T`, i.e the type of `initialState`.
    */
   parse?: (unparsed: string) => T;
   /**
    * `validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), throw an error, or return null. If an error is thrown, `onError` is called and `useSearchParamState` returns the initial state.
    *
-   * @param `unvalidated` The result of `parse` is passed as the `unvalidated` argument to `validate`.
+   * @param `unvalidated` The result of `parse` is passed as `unvalidated`.
    * @returns The `unvalidated` argument now validated as of type `T`, or `null`.
    */
   validate?: (unvalidated: unknown) => T | null;
