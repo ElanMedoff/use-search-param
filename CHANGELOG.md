@@ -8,6 +8,13 @@
 <!---->
 <!-- ### Fixed -->
 
+## 1.4.4 - 2024-01-05
+
+### Fixed
+
+- Remove unnecessary returns in `defaultParse`.
+- Remove unnecessary even listeners - `pushstate` and `replacestate` events are not valid.
+
 ## 1.4.3 - 2024-01-05
 
 ### Fixed
