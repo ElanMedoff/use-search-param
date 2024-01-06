@@ -105,15 +105,9 @@ function buildUseSearchParam(buildOptions: BuildUseSearchParamOptions = {}) {
       const onEvent = () => {
         setSearchParamVal(getSearchParam());
       };
-
       window.addEventListener("popstate", onEvent);
-      window.addEventListener("pushstate", onEvent);
-      window.addEventListener("replacestate", onEvent);
-
       return () => {
         window.removeEventListener("popstate", onEvent);
-        window.removeEventListener("pushstate", onEvent);
-        window.removeEventListener("replacestate", onEvent);
       };
     }, [getSearchParam]);
 
