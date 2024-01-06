@@ -16,6 +16,8 @@ A React hook to safely and easily read from URL search params.
 
 ## Basic usage
 
+[Code sandbox](https://codesandbox.io/p/sandbox/use-search-param-example-59r393)
+
 ```tsx
 import { useSearchParam } from "use-search-param";
 
@@ -100,12 +102,11 @@ The result of `sanitize` is passed as the `unparsed` argument to `parse`.
 `parse` defaults to the following function:
 
 ```ts
-export function defaultParse(unparsed: string) {
-  if (unparsed === "null") return null;
+function defaultParse(unparsed: string) {
+  // JSON.parse errors on "undefined"
   if (unparsed === "undefined") return undefined;
-  if (unparsed === "true") return true;
-  if (unparsed === "false") return false;
 
+  // parseFloat coerces bigints to numbers
   const maybeNum = parseFloat(unparsed);
   if (!Number.isNaN(maybeNum)) return maybeNum;
 
