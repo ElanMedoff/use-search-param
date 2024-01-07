@@ -22,6 +22,7 @@ A React hook to safely and easily read from URL search params.
 import { useSearchParam } from "use-search-param";
 
 function Demo() {
+  // typed as `number | null` in case the search param doesn't exist
   const counter = useSearchParam<number>("c");
 }
 ```
@@ -33,7 +34,9 @@ import { useSearchParam } from "use-search-param";
 import { z } from "zod";
 
 function Demo() {
-  const counter = useSearchParam<number>("c", {
+  // typed as `number` since `defaultValue` is provided
+  const counter = useSearchParam("c", {
+    defaultValue: 0,
     validate: z.number().parse,
   });
 }
@@ -62,6 +65,7 @@ interface UseSearchParamOptions<T> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T | null;
+  defaultValue?: T;
   onError?: (error: unknown) => void;
   serverSideSearchParams?: string | URLSearchParams;
 }
@@ -191,3 +195,12 @@ export const useSearchParam = buildUseSearchParam({
   sanitize: (unsanitized) => yourSanitizer(unsanitized),
 });
 ```
+
+## Known limitations
+
+`useSearchParam` creates an event listener to re-read the search param on `popstate` events with a `useEffect`. To prevent the `useEffect` from running after every render, it's provided with a dependency array. However, since several options passed by the user are functions (i.e `sanitize`, `parse`, `validate`, and `onError`), these options are intentionally excluded from the dependency array since by default, functions are not referentially stable.
+This is almost certainly beneficial to the consumer, since it's very unlikely that the developer would pre-emptively wrap these options in a `useCallback` to maintain referential stability.
+
+However, say we have a scenario where the consumer _does_ memoize two `validate` functions and conditionally passes one or the other, `useSearchParam` will not recognize that `validate` has changed. In this situation, the event listener will not be updated to use the latest `validate` option.
+
+If you run into this issue yourself, please create an [issue](https://github.com/ElanMedoff/use-search-param/issues) 🙏.
