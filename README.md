@@ -1,9 +1,3 @@
-<!---
-TODO
-1. look into usecallbacks
-2. add default/Value/Val option
--->
-
 # use-search-param
 
 A React hook to safely and easily read from URL search params.
@@ -133,6 +127,18 @@ The result of `parse` is passed as the `unvalidated` argument to `validate`.
 `validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `defaultValue`.
 
 `validate` has no default value.
+
+### `defaultValue`
+
+A value of type `T`, i.e. the type returned by `useSearchParam`.
+
+If the given search param does not exist (i.e. `URLSearchParams.get` returns `null`), or `sanitize`, `parse`, or `validate` throw an error, `useSearchParam` will return `defaultValue`.
+
+`defaultValue` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When a `defaultValue` option is passed to both, only the `defaultValue` passed to `useSearchParam` will be called.
+
+Note that when `defaultValue` is passed, `useSearchParam` has a return type of `T` - when no `defaultValue` option is passed, the return type is `T | null`.
+
+`defaultValue` defaults to `null`.
 
 ### `onError`
 
