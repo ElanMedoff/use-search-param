@@ -23,7 +23,7 @@ describe("useSearchParamState", () => {
         vi.spyOn(helpers, "isWindowUndefined").mockReturnValue(true);
       });
 
-      it("with a serverSideSearchParams string option, it should dehydrate the search param", () => {
+      it("when passed a serverSideSearchParams string option, it should dehydrate the search param", () => {
         const { result } = renderHook(() =>
           useSearchParam("counter", {
             serverSideSearchParams: "?counter=1",
@@ -32,7 +32,7 @@ describe("useSearchParamState", () => {
         expect(result.current).toBe(1);
       });
 
-      it("with a serverSideSearchParams class option, it should dehydrate the search param", () => {
+      it("when passed a serverSideSearchParams class option, it should dehydrate the search param", () => {
         const { result } = renderHook(() =>
           useSearchParam("counter", {
             serverSideSearchParams: new URLSearchParams("?counter=1"),
@@ -41,15 +41,37 @@ describe("useSearchParamState", () => {
         expect(result.current).toBe(1);
       });
 
-      it("without a serverSideSearchParams, it should return null", () => {
-        const { result } = renderHook(() => useSearchParam("counter"));
-        expect(result.current).toBe(null);
+      describe("without a serverSideSearchParams", () => {
+        it("it should return null", () => {
+          const { result } = renderHook(() => useSearchParam("counter"));
+          expect(result.current).toBe(null);
+        });
+
+        it("when passed a defaultValue option, it should return it", () => {
+          const { result } = renderHook(() =>
+            useSearchParam("counter", {
+              defaultValue: 0,
+            }),
+          );
+          expect(result.current).toBe(0);
+        });
       });
     });
 
-    it("with no search param in the url, it should return null", () => {
-      const { result } = renderHook(() => useSearchParam("counter"));
-      expect(result.current).toBe(null);
+    describe("with no search param in the url", () => {
+      it("it should return null", () => {
+        const { result } = renderHook(() => useSearchParam("counter"));
+        expect(result.current).toBe(null);
+      });
+
+      it("when passed a defaultValue option, it should return it", () => {
+        const { result } = renderHook(() =>
+          useSearchParam("counter", {
+            defaultValue: 0,
+          }),
+        );
+        expect(result.current).toBe(0);
+      });
     });
 
     it("with a search param in the url, it should parse the search param", () => {
@@ -79,7 +101,7 @@ describe("useSearchParamState", () => {
           expect(result.current).toBe(12);
         });
 
-        it("when passed a sanitize from the hook options and build options, it should call the hook option", () => {
+        it("when passed a sanitize option from the hook options and build options, it should call the hook option", () => {
           const useBuiltSearchParam = buildUseSearchParam({
             sanitize: (unsanitized) => `${unsanitized}2`,
           });
@@ -99,7 +121,7 @@ describe("useSearchParamState", () => {
           expect(result.current).toBe(2);
         });
 
-        it("when passed a parse from the hook options and build options, it should call the hook option", () => {
+        it("when passed a parse option from the hook options and build options, it should call the hook option", () => {
           const useBuiltSearchParam = buildUseSearchParam({
             parse: (unparsed) => JSON.parse(unparsed) + 1,
           });
@@ -113,7 +135,39 @@ describe("useSearchParamState", () => {
       });
 
       describe("error options", () => {
-        it("when passed an onError, it should call it on error", () => {
+        it("when passed a defaultValue option, it should use it on error", () => {
+          const onError = vi.fn();
+          const useBuiltSearchParam = buildUseSearchParam({
+            onError,
+            sanitize: () => {
+              throw new Error();
+            },
+            defaultValue: 0,
+          });
+          const { result } = renderHook(() => useBuiltSearchParam("counter"));
+          expect(onError).toHaveBeenCalledOnce();
+          expect(result.current).toBe(0);
+        });
+
+        it("when passed a defaultValue option from the hook options and build options, it should call the hook option", () => {
+          const onError = vi.fn();
+          const useBuiltSearchParam = buildUseSearchParam({
+            onError,
+            sanitize: () => {
+              throw new Error();
+            },
+            defaultValue: 0,
+          });
+          const { result } = renderHook(() =>
+            useBuiltSearchParam("counter", {
+              defaultValue: 1,
+            }),
+          );
+          expect(onError).toHaveBeenCalledOnce();
+          expect(result.current).toBe(1);
+        });
+
+        it("when passed an onError option, it should call it on error", () => {
           const onError = vi.fn();
           const useBuiltSearchParam = buildUseSearchParam({
             onError,
@@ -141,7 +195,7 @@ describe("useSearchParamState", () => {
           expect(result.current).toBe(null);
         });
 
-        it("when passed an onError from the hook options and build options, it should call both on error", () => {
+        it("when passed an onError option from the hook options and build options, it should call both on error", () => {
           const buildOnError = vi.fn();
           const hookOnError = vi.fn();
           const useBuiltSearchParam = buildUseSearchParam({
@@ -160,7 +214,7 @@ describe("useSearchParamState", () => {
           expect(result.current).toBe(null);
         });
 
-        it("when passed an onError from the hook options and build options, it should call both on validation errors", () => {
+        it("when passed an onError option from the hook options and build options, it should call both on validation errors", () => {
           const buildOnError = vi.fn();
           const hookOnError = vi.fn();
 
@@ -219,7 +273,22 @@ describe("useSearchParamState", () => {
       });
 
       describe("error options", () => {
-        it("when passed an onError, it should call it on error", () => {
+        it("when passed a defaultValue option, it should use it on error", () => {
+          const onError = vi.fn();
+          const { result } = renderHook(() =>
+            useSearchParam("counter", {
+              onError,
+              sanitize: () => {
+                throw new Error();
+              },
+              defaultValue: 0,
+            }),
+          );
+          expect(onError).toHaveBeenCalledOnce();
+          expect(result.current).toBe(0);
+        });
+
+        it("when passed an onError option, it should call it on error", () => {
           const onError = vi.fn();
           const { result } = renderHook(() =>
             useSearchParam("counter", {
@@ -233,7 +302,7 @@ describe("useSearchParamState", () => {
           expect(result.current).toBe(null);
         });
 
-        it("when passed an onError, it should call it on validation error", () => {
+        it("when passed an onError option, it should call it on validation error", () => {
           const onError = vi.fn();
           const schema = z.string();
           const { result } = renderHook(() =>
@@ -249,24 +318,20 @@ describe("useSearchParamState", () => {
     });
   });
 
-  describe("events", () => {
-    beforeEach(() => {
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { search: "?counter=1" },
-      });
+  it("should update the state on the popstate event", () => {
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: { search: "?counter=1" },
     });
 
-    it("should update the state on the popstate event", () => {
-      const { result } = renderHook(() => useSearchParam("counter"));
-      expect(result.current).toBe(1);
+    const { result } = renderHook(() => useSearchParam("counter"));
+    expect(result.current).toBe(1);
 
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { search: "?counter=2" },
-      });
-      dispatchEvent(new Event("popstate"));
-      expect(result.current).toBe(2);
+    Object.defineProperty(window, "location", {
+      writable: true,
+      value: { search: "?counter=2" },
     });
+    dispatchEvent(new Event("popstate"));
+    expect(result.current).toBe(2);
   });
 });

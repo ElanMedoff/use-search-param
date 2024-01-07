@@ -1,3 +1,9 @@
+<!---
+TODO
+1. look into usecallbacks
+2. add default/Value/Val option
+-->
+
 # use-search-param
 
 A React hook to safely and easily read from URL search params.
@@ -43,13 +49,13 @@ function Demo() {
 
 On the first render, `useSearchParam` will set `counter` to the value read from the `c` URL search param.
 
-By default, the `c` search param is read using `window.location.search`. If the `window` object is `undefined`, `useSearchParam` will use the `serverSideSearchParams` instead to read from the URL. If `serverSideSearchParams` is also not provided, `counter` will be set to `null`.
+By default, the `c` search param is read using `window.location.search`. If the `window` object is `undefined`, `useSearchParam` will use the `serverSideSearchParams` instead to read from the URL. If `serverSideSearchParams` is also not provided, `counter` will be set to `defaultValue` (which defaults to `null`).
 
-If the `c` search param does not exist (i.e. `URLSearchParams.get` returns `null`), `counter` will be set to `null`.
+If the `c` search param does not exist (i.e. `URLSearchParams.get` returns `null`), `counter` will be set to `defaultValue`.
 
 Once the `c` search param is accessed, the raw string is passed to `sanitize`, the output of `sanitize` is passed to `parse`, and finally the output of `parse` is passed to `validate`. Note that `useSearchParam` aims to return a _parsed_ value, not a _stringified_ value!
 
-If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is called, and `counterVal` is set to `null`. Additionally if `validate` returns `null`, `counter` will be set to `null`.
+If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is called, and `counterVal` is set to `defaultValue`.
 
 Otherwise, `counter` is set to the sanitized, parsed, and validated value in the `c` search param.
 
@@ -124,7 +130,7 @@ A function with the following type: `(unvalidated: unknown) => T | null`.
 
 The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
-`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
+`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `defaultValue`.
 
 `validate` has no default value.
 
