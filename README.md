@@ -8,10 +8,10 @@ A React hook to safely and easily read from URL search params.
 [![NPM](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
 [![Static Badge](https://img.shields.io/badge/dependencies%20-%200%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
 
-<br>
-<p align="center">
+<br />
+<div align="center">
     <img src="https://elanmed.dev/npm-packages/use-search-param-logo.png" width="500px" />
-</p>
+</div>
 
 ## Basic usage
 
