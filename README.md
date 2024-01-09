@@ -25,8 +25,6 @@ function Demo() {
 }
 ```
 
-or
-
 ```tsx
 import { useSearchParam } from "use-search-param";
 import { z } from "zod";
@@ -80,7 +78,7 @@ const validated = options.validate(parsed);
 return validated;
 ```
 
-### `sanitize`
+## sanitize
 
 A function with the following type: `(unsanitized: string) => string`.
 
@@ -90,7 +88,7 @@ A function with the following type: `(unsanitized: string) => string`.
 
 `sanitize` has no default value.
 
-### `parse`
+## parse
 
 A function with the following type: `(unparsed: string) => T`.
 
@@ -117,7 +115,7 @@ function defaultParse(unparsed: string) {
 }
 ```
 
-### `validate`
+## validate
 
 A function with the following type: `(unvalidated: unknown) => T | null`.
 
@@ -127,7 +125,7 @@ The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
 `validate` has no default value.
 
-### `onError`
+## onError
 
 A function with the following type: `(error: unknown) => void`.
 
@@ -135,7 +133,7 @@ Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError
 
 `onError` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When an `onError` option is passed to both, both the functions will be called.
 
-### `serverSideSearchParams`
+## serverSideSearchParams
 
 A value of type `string` or `URLSearchParams`.
 
@@ -166,7 +164,7 @@ export default function Home({
 
 Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
 
-## "Building" `useSearchParam`
+## "Building" your own hook
 
 You can also build the hook yourself to implicitly pass `sanitize` and `onError` options to every instance of `useSearchParam`:
 
