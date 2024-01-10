@@ -8,6 +8,13 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.0.1 - 2024-01-09
+
+### Fixed
+
+- Update `vitest` to version >`1.0.0`.
+- Added known limitations section to the README.
+
 ## 2.0.0 - 2024-01-09
 
 ### Changed
