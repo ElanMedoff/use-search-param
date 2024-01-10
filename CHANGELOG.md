@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.0.0 - 2024-01-09
+
+### Changed
+
+- Update `serverSideSearchParams` type from `string | URLSearchParams` to `string` to maintain referential stability.
+
 ## 1.4.4 - 2024-01-05
 
 ### Fixed
