@@ -20,11 +20,11 @@ interface UseSearchParamOptions<T> {
    */
   validate?: (unvalidated: unknown) => T | null;
   /**
-   * A value of type `string` or `URLSearchParams`.
+   * A value of type `string` - any valid `string` input to the `URLSearchParams` constructor.
    *
    * When passed, `serverSideSearchParams` will be used when `window` is `undefined` to access the URL search param. This is useful for generating content on the server, i.e. with Next.js.
    */
-  serverSideSearchParams?: string | URLSearchParams;
+  serverSideSearchParams?: string;
   /**
    * @param `error` The error caught in one of `useSearchParamState`'s `try` `catch` blocks.
    * @returns
@@ -61,9 +61,6 @@ function buildUseSearchParam(buildOptions: BuildUseSearchParamOptions = {}) {
 
     const maybeGetSearch = React.useCallback(() => {
       if (isWindowUndefined()) {
-        if (serverSideSearchParams instanceof URLSearchParams) {
-          return serverSideSearchParams.toString();
-        }
         if (typeof serverSideSearchParams === "string") {
           return serverSideSearchParams;
         }

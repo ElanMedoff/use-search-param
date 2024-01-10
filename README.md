@@ -77,7 +77,7 @@ interface UseSearchParamOptions<T> {
   parse?: (unparsed: string) => T;
   validate?: (unvalidated: unknown) => T | null;
   onError?: (error: unknown) => void;
-  serverSideSearchParams?: string | URLSearchParams;
+  serverSideSearchParams?: string;
 }
 ```
 
@@ -152,7 +152,7 @@ Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError
 
 ### serverSideSearchParams
 
-A value of type `string` or `URLSearchParams`.
+A value of type `string` - any valid `string` input to the `URLSearchParams` constructor.
 
 When passed, `serverSideSearchParams` will be used when `window` is `undefined` to access the search params. This is useful for generating content on the server, i.e. with Next.js:
 

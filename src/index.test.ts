@@ -23,7 +23,7 @@ describe("useSearchParamState", () => {
         vi.spyOn(helpers, "isWindowUndefined").mockReturnValue(true);
       });
 
-      it("with a serverSideSearchParams string option, it should dehydrate the search param", () => {
+      it("with a serverSideSearchParams option, it should dehydrate the search param", () => {
         const { result } = renderHook(() =>
           useSearchParam("counter", {
             serverSideSearchParams: "?counter=1",
@@ -32,16 +32,7 @@ describe("useSearchParamState", () => {
         expect(result.current).toBe(1);
       });
 
-      it("with a serverSideSearchParams class option, it should dehydrate the search param", () => {
-        const { result } = renderHook(() =>
-          useSearchParam("counter", {
-            serverSideSearchParams: new URLSearchParams("?counter=1"),
-          }),
-        );
-        expect(result.current).toBe(1);
-      });
-
-      it("without a serverSideSearchParams, it should return null", () => {
+      it("without a serverSideSearchParams option, it should return null", () => {
         const { result } = renderHook(() => useSearchParam("counter"));
         expect(result.current).toBe(null);
       });
