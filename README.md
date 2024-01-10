@@ -8,10 +8,11 @@ A React hook to safely and easily read from URL search params.
 [![NPM](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
 [![Static Badge](https://img.shields.io/badge/dependencies%20-%200%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
 
-<br />
-<div align="center">
+<!-- a hack to get around github sanitizing styles from markdown -->
+<br>
+<p align="center">
     <img src="https://elanmed.dev/npm-packages/use-search-param-logo.png" width="500px" />
-</div>
+</p>
 
 ## Basic usage
 
@@ -25,14 +26,17 @@ function Demo() {
 }
 ```
 
+or
+
 ```tsx
 import { useSearchParam } from "use-search-param";
 import { z } from "zod";
 
 function Demo() {
-  const counter = useSearchParam<number>("c", {
-    validate: z.number().parse,
-  });
+  const counter =
+    useSearchParam<number>("c", {
+      validate: z.number().parse,
+    }) ?? 0;
 }
 ```
 
@@ -49,6 +53,19 @@ Once the `c` search param is accessed, the raw string is passed to `sanitize`, t
 If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is called, and `counterVal` is set to `null`. Additionally if `validate` returns `null`, `counter` will be set to `null`.
 
 Otherwise, `counter` is set to the sanitized, parsed, and validated value in the `c` search param.
+
+## "Building" your own `useSearchParam`
+
+You can build `useSearchParam` yourself to implicitly pass `sanitize` and `onError` options to every instance of the created hook:
+
+```tsx
+import { buildUseSearchParam } from "use-search-param";
+
+// import this instance of `useSearchParam` in your components
+export const useSearchParam = buildUseSearchParam({
+  sanitize: (unsanitized) => yourSanitizer(unsanitized),
+});
+```
 
 ## Options
 
@@ -78,7 +95,7 @@ const validated = options.validate(parsed);
 return validated;
 ```
 
-## sanitize
+### sanitize
 
 A function with the following type: `(unsanitized: string) => string`.
 
@@ -88,7 +105,7 @@ A function with the following type: `(unsanitized: string) => string`.
 
 `sanitize` has no default value.
 
-## parse
+### parse
 
 A function with the following type: `(unparsed: string) => T`.
 
@@ -115,7 +132,7 @@ function defaultParse(unparsed: string) {
 }
 ```
 
-## validate
+### validate
 
 A function with the following type: `(unvalidated: unknown) => T | null`.
 
@@ -125,7 +142,7 @@ The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
 `validate` has no default value.
 
-## onError
+### onError
 
 A function with the following type: `(error: unknown) => void`.
 
@@ -133,7 +150,7 @@ Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError
 
 `onError` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When an `onError` option is passed to both, both the functions will be called.
 
-## serverSideSearchParams
+### serverSideSearchParams
 
 A value of type `string` or `URLSearchParams`.
 
@@ -163,16 +180,3 @@ export default function Home({
 ```
 
 Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
-
-## "Building" your own hook
-
-You can also build the hook yourself to implicitly pass `sanitize` and `onError` options to every instance of `useSearchParam`:
-
-```tsx
-import { buildUseSearchParam } from "use-search-param";
-
-// import this instance of `useSearchParam` in your components
-export const useSearchParam = buildUseSearchParam({
-  sanitize: (unsanitized) => yourSanitizer(unsanitized),
-});
-```
