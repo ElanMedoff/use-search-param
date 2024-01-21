@@ -78,10 +78,10 @@ For cases when you want to read from the search param outside a React component,
 `useSearchParam` accepts the following options:
 
 ```tsx
-interface Options<T> {
+interface Options<TVal> {
   sanitize?: (unsanitized: string) => string;
-  parse?: (unparsed: string) => T;
-  validate?: (unvalidated: unknown) => T | null;
+  parse?: (unparsed: string) => TVal;
+  validate?: (unvalidated: unknown) => TVal | null;
   onError?: (error: unknown) => void;
   serverSideSearchParams?: string;
 }
@@ -92,7 +92,7 @@ Note that `sanitize`, `parse`, and `validate` run in the following order:
 ```tsx
 // simplified
 const rawSearchParam = new URLSearchParams(window.location.search).get(
-  searchParam,
+  searchParamKey,
 );
 const sanitized = options.sanitize(rawSearchParam);
 const parsed = options.parse(sanitized);
@@ -113,7 +113,7 @@ A function with the following type: `(unsanitized: string) => string`.
 
 ### parse
 
-A function with the following type: `(unparsed: string) => T`.
+A function with the following type: `(unparsed: string) => TValue`.
 
 The result of `sanitize` is passed as the `unparsed` argument to `parse`.
 
@@ -140,11 +140,11 @@ function defaultParse(unparsed: string) {
 
 ### validate
 
-A function with the following type: `(unvalidated: unknown) => T | null`.
+A function with the following type: `(unvalidated: unknown) => TVal | null`.
 
 The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
-`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
+`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `TVal`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
 
 `validate` has no default value.
 

@@ -1,7 +1,8 @@
 import React from "react";
 import { defaultParse, isWindowUndefined } from "./helpers";
 
-interface Options<T> {
+// TODO: rename back to UseSearchParamOptions?
+interface Options<TVal> {
   /**
    * @param `unsanitized` The raw string pulled from the URL search param.
    * @returns The sanitized string.
@@ -9,16 +10,16 @@ interface Options<T> {
   sanitize?: (unsanitized: string) => string;
   /**
    * @param `unparsed` The result of `sanitize` is passed as `unparsed`.
-   * @returns A parsed value of the type `T`, i.e the type of `initialState`.
+   * @returns A parsed value of the type `TVal`, i.e the type of the parsed search param value.
    */
-  parse?: (unparsed: string) => T;
+  parse?: (unparsed: string) => TVal;
   /**
-   * `validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), throw an error, or return null. If an error is thrown, `onError` is called and `useSearchParamState` returns the initial state.
+   * `validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `TVal`), throw an error, or return null. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
    *
    * @param `unvalidated` The result of `parse` is passed as `unvalidated`.
-   * @returns The `unvalidated` argument now validated as of type `T`, or `null`.
+   * @returns The `unvalidated` argument now validated as type `TVal`, or `null`.
    */
-  validate?: (unvalidated: unknown) => T | null;
+  validate?: (unvalidated: unknown) => TVal | null;
   /**
    * A value of type `string` - any valid `string` input to the `URLSearchParams` constructor.
    *
@@ -26,20 +27,20 @@ interface Options<T> {
    */
   serverSideSearchParams?: string;
   /**
-   * @param `error` The error caught in one of `useSearchParamState`'s `try` `catch` blocks.
+   * @param `error` The error caught in one of the `try` `catch` blocks.
    * @returns
    */
   onError?: (error: unknown) => void;
 }
 // to be deprecated next major version
-type UseSearchParamOptions<T> = Options<T>;
+type UseSearchParamOptions<TVal> = Options<TVal>;
 
 type BuildOptions = Pick<Options<unknown>, "sanitize" | "parse" | "onError">;
 // to be deprecated next major version
 type BuildUseSearchParamOptions = BuildOptions;
 
-function maybeGetSearchParam<T>({
-  searchParam,
+function maybeGetSearchParam<TVal>({
+  searchParamKey,
   serverSideSearchParams,
   sanitize,
   parse,
@@ -47,14 +48,14 @@ function maybeGetSearchParam<T>({
   buildOnError,
   localOnError,
 }: {
-  searchParam: string;
-  serverSideSearchParams: Options<T>["serverSideSearchParams"];
-  sanitize: Options<T>["sanitize"];
-  validate: Options<T>["validate"];
-  buildOnError: Options<T>["onError"];
-  localOnError: Options<T>["onError"];
-  // required because it has a default value
-  parse: Required<Options<T>>["parse"];
+  searchParamKey: string;
+  serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
+  sanitize: Options<TVal>["sanitize"];
+  validate: Options<TVal>["validate"];
+  buildOnError: Options<TVal>["onError"];
+  localOnError: Options<TVal>["onError"];
+  // Required because `parse` has a default value
+  parse: Required<Options<TVal>>["parse"];
 }) {
   try {
     let search: string | null;
@@ -73,13 +74,15 @@ function maybeGetSearchParam<T>({
     }
 
     const urlParams = new URLSearchParams(search);
-    const rawSearchParam = urlParams.get(searchParam);
-    if (rawSearchParam === null) {
+    const rawSearchParamVal = urlParams.get(searchParamKey);
+    if (rawSearchParamVal === null) {
       return null;
     }
 
     const sanitized =
-      sanitize instanceof Function ? sanitize(rawSearchParam) : rawSearchParam;
+      sanitize instanceof Function
+        ? sanitize(rawSearchParamVal)
+        : rawSearchParamVal;
     const parsed = parse(sanitized);
     const validated = validate instanceof Function ? validate(parsed) : parsed;
 
@@ -92,35 +95,35 @@ function maybeGetSearchParam<T>({
 }
 
 function buildGetSearchParam(buildOptions: BuildOptions = {}) {
-  return function getSearchParam<T>(
+  return function getSearchParam<TVal>(
     /**
      * The name of the URL search param to read from and write to.
      *
      * See MDN's documentation on [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) for more info.
      */
-    searchParam: string,
+    searchParamKey: string,
     /**
      * Options passed by a particular instance of `getSearchParam`.
      *
      * When an option is passed to both `getSearchParam` and `buildGetSearchParam`, only the option passed to `getSearchParam` is respected. The exception is an `onError` option passed to both, in which case both `onError`s are called.
      */
-    localOptions: Options<T> = {},
+    localOptions: Options<TVal> = {},
   ) {
     const parse =
       localOptions.parse ??
-      (buildOptions.parse as Options<T>["parse"]) ??
-      (defaultParse as Required<Options<T>>["parse"]);
+      (buildOptions.parse as Options<TVal>["parse"]) ??
+      (defaultParse as Required<Options<TVal>>["parse"]);
     const sanitize = localOptions.sanitize ?? buildOptions.sanitize;
     const { validate, serverSideSearchParams } = localOptions;
 
     return maybeGetSearchParam({
+      searchParamKey,
+      serverSideSearchParams,
+      sanitize,
+      parse,
+      validate,
       buildOnError: buildOptions.onError,
       localOnError: localOptions.onError,
-      parse,
-      sanitize,
-      searchParam,
-      serverSideSearchParams,
-      validate,
     });
   };
 }
@@ -128,37 +131,37 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
 const getSearchParam = buildGetSearchParam();
 
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
-  return function useSearchParam<T>(
+  return function useSearchParam<TVal>(
     /**
      * The name of the URL search param to read from and write to.
      *
      * See MDN's documentation on [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) for more info.
      */
-    searchParam: string,
+    searchParamKey: string,
     /**
-     * Options passed by a particular instance of `useSearchParamState`.
+     * Options passed by a particular instance of `useSearchParam`.
      *
-     * When an option is passed to both `useSearchParamState` and `buildUseSearchParam`, only the option passed to `useSearchParamState` is respected. The exception is an `onError` option passed to both, in which case both `onError`s are called.
+     * When an option is passed to both `useSearchParam` and `buildUseSearchParam`, only the option passed to `useSearchParam` is respected. The exception is an `onError` option passed to both, in which case both `onError`s are called.
      */
-    hookOptions: Options<T> = {},
+    hookOptions: Options<TVal> = {},
   ) {
     const parse =
       hookOptions.parse ??
-      (buildOptions.parse as Options<T>["parse"]) ??
-      (defaultParse as Required<Options<T>>["parse"]);
+      (buildOptions.parse as Options<TVal>["parse"]) ??
+      (defaultParse as Required<Options<TVal>>["parse"]);
     const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
     const { validate, serverSideSearchParams } = hookOptions;
 
     React.useEffect(() => {
       const onEvent = () => {
         const newSearchParamVal = maybeGetSearchParam({
-          searchParam,
+          searchParamKey,
+          serverSideSearchParams,
+          sanitize,
+          parse,
+          validate,
           buildOnError: buildOptions.onError,
           localOnError: hookOptions.onError,
-          parse,
-          sanitize,
-          serverSideSearchParams,
-          validate,
         });
 
         setSearchParamVal(newSearchParamVal);
@@ -167,18 +170,19 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       return () => {
         window.removeEventListener("popstate", onEvent);
       };
-    }, [searchParam, serverSideSearchParams]);
+    }, [searchParamKey, serverSideSearchParams]);
 
-    const [searchParamVal, setSearchParamVal] = React.useState<T | null>(() =>
-      maybeGetSearchParam({
-        searchParam,
-        buildOnError: buildOptions.onError,
-        localOnError: hookOptions.onError,
-        parse,
-        sanitize,
-        serverSideSearchParams,
-        validate,
-      }),
+    const [searchParamVal, setSearchParamVal] = React.useState<TVal | null>(
+      () =>
+        maybeGetSearchParam({
+          searchParamKey,
+          serverSideSearchParams,
+          sanitize,
+          parse,
+          validate,
+          buildOnError: buildOptions.onError,
+          localOnError: hookOptions.onError,
+        }),
     );
 
     return searchParamVal;
