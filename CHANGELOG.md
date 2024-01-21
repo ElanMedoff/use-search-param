@@ -8,6 +8,13 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.1.0 - 2024-01-20
+
+### Added
+
+- Added `getSearchParam` and `buildGetSearchParam`.
+- Added testing section, section on `getSearchParam` / `buildGetSearchParam` to the README.
+
 ## 2.0.1 - 2024-01-09
 
 ### Fixed
