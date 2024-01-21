@@ -23,6 +23,7 @@ import { useSearchParam } from "use-search-param";
 
 function Demo() {
   const counter = useSearchParam<number>("c");
+  // ...
 }
 ```
 
@@ -34,15 +35,16 @@ import { z } from "zod";
 
 function Demo() {
   const counter =
-    useSearchParam<number>("c", {
+    useSearchParam("c", {
       validate: z.number().parse,
     }) ?? 0;
+  // ...
 }
 ```
 
 ## Explanation
 
-On the first render, `useSearchParam` will set `counter` to the value read from the `c` URL search param.
+On the first render, `useSearchParam` will read from the `c` URL search param.
 
 By default, the `c` search param is read using `window.location.search`. If the `window` object is `undefined`, `useSearchParam` will use the `serverSideSearchParams` instead to read from the URL. If `serverSideSearchParams` is also not provided, `counter` will be set to `null`.
 
@@ -54,9 +56,9 @@ If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is ca
 
 Otherwise, `counter` is set to the sanitized, parsed, and validated value in the `c` search param.
 
-## "Building" your own `useSearchParam`
+## Building your own `useSearchParam`
 
-You can build `useSearchParam` yourself to implicitly pass `sanitize` and `onError` options to every instance of the created hook:
+You can build `useSearchParam` yourself with `buildUseSearchParam` to implicitly pass `sanitize`, `parse`, and `onError` options to every instance of the created hook:
 
 ```tsx
 import { buildUseSearchParam } from "use-search-param";
@@ -67,15 +69,19 @@ export const useSearchParam = buildUseSearchParam({
 });
 ```
 
+## Imperative `getSearchParam`
+
+For cases when you want to read from the search param outside a React component, two additional exports are provided: `getSearchParam` and `buildGetSearchParam`. Both have the same function signatures and behavior as their `useSearchParam` and `buildUseSearchParam` counterparts, with one exception: `getSearchParam` has no way to "react" to `popstate` events, unlike `useSearchParam`.
+
 ## Options
 
 `useSearchParam` accepts the following options:
 
 ```tsx
-interface UseSearchParamOptions<T> {
+interface Options<TVal> {
   sanitize?: (unsanitized: string) => string;
-  parse?: (unparsed: string) => T;
-  validate?: (unvalidated: unknown) => T | null;
+  parse?: (unparsed: string) => TVal;
+  validate?: (unvalidated: unknown) => TVal | null;
   onError?: (error: unknown) => void;
   serverSideSearchParams?: string;
 }
@@ -86,7 +92,7 @@ Note that `sanitize`, `parse`, and `validate` run in the following order:
 ```tsx
 // simplified
 const rawSearchParam = new URLSearchParams(window.location.search).get(
-  searchParam,
+  searchParamKey,
 );
 const sanitized = options.sanitize(rawSearchParam);
 const parsed = options.parse(sanitized);
@@ -107,7 +113,7 @@ A function with the following type: `(unsanitized: string) => string`.
 
 ### parse
 
-A function with the following type: `(unparsed: string) => T`.
+A function with the following type: `(unparsed: string) => TValue`.
 
 The result of `sanitize` is passed as the `unparsed` argument to `parse`.
 
@@ -134,11 +140,11 @@ function defaultParse(unparsed: string) {
 
 ### validate
 
-A function with the following type: `(unvalidated: unknown) => T | null`.
+A function with the following type: `(unvalidated: unknown) => TVal | null`.
 
 The result of `parse` is passed as the `unvalidated` argument to `validate`.
 
-`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `T`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
+`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `TVal`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
 
 `validate` has no default value.
 
@@ -181,11 +187,41 @@ export default function Home({
 
 Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
 
+## Testing
+
+The best approach to test uses of `useSearchParam` / `getSearchParam` is by mocking the `window.location` property directly in your tests:
+
+```ts
+Object.defineProperty(window, "location", {
+  writable: true,
+  value: { search: "?counter=1" },
+});
+```
+
+If you mutate `window.location` directly, i.e.
+
+```ts
+window.location = { search: "?counter=1" };
+```
+
+You may receive an error that `window.location` is read-only.
+
+Alternatively, you could mock `useSearchParam`/`getSearchParam` itself:
+
+```ts
+import * as useSearchParamWrapper from "use-search-param";
+
+jest.spyOn(useSearchParamWrapper, "useSearchParam").mockReturnValue(1);
+jest.spyOn(useSearchParamWrapper, "getSearchParam").mockReturnValue(1);
+```
+
+But this shadows the actual behavior of `useSearchParam` / `getSearchParam` and any of the options passed, and it may lead to unexpected behavior.
+
 ## Known limitations
 
 `useSearchParam` creates an event listener to re-read the search param on `popstate` events with a `useEffect`. To prevent the `useEffect` from running after every render, it's provided with a dependency array. However, since several options passed by the user are functions (i.e `sanitize`, `parse`, `validate`, and `onError`), these options are intentionally excluded from the dependency array since by default, functions are not referentially stable.
-This is almost certainly beneficial to the consumer, since it's very unlikely that the developer would pre-emptively wrap these options in a `useCallback` to maintain referential stability.
+This is almost certainly beneficial to the consumer, since it's very unlikely that the developer would preemptively wrap these options in a `useCallback` to maintain referential stability.
 
 However, say we have a scenario where the consumer _does_ memoize two `validate` functions and conditionally passes one or the other, `useSearchParam` will not recognize that `validate` has changed. In this situation, the event listener will not be updated to use the latest `validate` option.
 
-If you run into this issue yourself, please create an [issue](https://github.com/ElanMedoff/use-search-param/issues) 🙏.
+If you run into this problem yourself, please create an [issue](https://github.com/ElanMedoff/use-search-param/issues) on Github 🙏.
