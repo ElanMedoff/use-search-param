@@ -9,7 +9,6 @@ fi
 echo "what version are you updating to? (y/n)"
 read VERSION
 
-npm run build
 git add -A
 git commit -m "version: v$VERSION"
 git push origin head
