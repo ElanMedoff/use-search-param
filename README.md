@@ -219,12 +219,3 @@ jest.spyOn(useSearchParamWrapper, "getSearchParam").mockReturnValue(1);
 ```
 
 But this shadows the actual behavior of `useSearchParam` / `getSearchParam` and any of the options passed, and it may lead to unexpected behavior.
-
-## Known limitations
-
-`useSearchParam` creates an event listener to re-read the search param on `popstate` events with a `useEffect`. To prevent the `useEffect` from running after every render, it's provided with a dependency array. However, since several options passed by the user are functions (i.e `sanitize`, `parse`, `validate`, and `onError`), these options are intentionally excluded from the dependency array since by default, functions are not referentially stable.
-This is almost certainly beneficial to the consumer, since it's very unlikely that the developer would preemptively wrap these options in a `useCallback` to maintain referential stability.
-
-However, say we have a scenario where the consumer _does_ memoize two `validate` functions and conditionally passes one or the other, `useSearchParam` will not recognize that `validate` has changed. In this situation, the event listener will not be updated to use the latest `validate` option.
-
-If you run into this problem yourself, please create an [issue](https://github.com/ElanMedoff/use-search-param/issues) on Github 🙏.

@@ -32,11 +32,11 @@ interface Options<TVal> {
    */
   onError?: (error: unknown) => void;
 }
-// to be deprecated next major version
+// TODO: deprecate next major version
 type UseSearchParamOptions<TVal> = Options<TVal>;
 
 type BuildOptions = Pick<Options<unknown>, "sanitize" | "parse" | "onError">;
-// to be deprecated next major version
+// TODO: deprecate next major version
 type BuildUseSearchParamOptions = BuildOptions;
 
 function maybeGetSearchParam<TVal>({
@@ -145,23 +145,37 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
      */
     hookOptions: Options<TVal> = {},
   ) {
-    const parse =
+    const parseOption =
       hookOptions.parse ??
       (buildOptions.parse as Options<TVal>["parse"]) ??
       (defaultParse as Required<Options<TVal>>["parse"]);
-    const sanitize = hookOptions.sanitize ?? buildOptions.sanitize;
-    const { validate, serverSideSearchParams } = hookOptions;
+    const sanitizeOption = hookOptions.sanitize ?? buildOptions.sanitize;
+    const { serverSideSearchParams, validate: validateOption } = hookOptions;
+
+    const parseRef = React.useRef(parseOption);
+    const sanitizeRef = React.useRef(sanitizeOption);
+    const validateRef = React.useRef(validateOption);
+    const buildOnErrorRef = React.useRef(buildOptions.onError);
+    const hookOnErrorRef = React.useRef(hookOptions.onError);
+
+    React.useEffect(() => {
+      parseRef.current = parseOption;
+      sanitizeRef.current = sanitizeOption;
+      validateRef.current = validateOption;
+      buildOnErrorRef.current = buildOptions.onError;
+      hookOnErrorRef.current = hookOptions.onError;
+    });
 
     React.useEffect(() => {
       const onEvent = () => {
         const newSearchParamVal = maybeGetSearchParam({
           searchParamKey,
           serverSideSearchParams,
-          sanitize,
-          parse,
-          validate,
-          buildOnError: buildOptions.onError,
-          localOnError: hookOptions.onError,
+          sanitize: sanitizeRef.current,
+          parse: parseRef.current,
+          validate: validateRef.current,
+          buildOnError: buildOnErrorRef.current,
+          localOnError: hookOnErrorRef.current,
         });
 
         setSearchParamVal(newSearchParamVal);
@@ -177,9 +191,9 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
         maybeGetSearchParam({
           searchParamKey,
           serverSideSearchParams,
-          sanitize,
-          parse,
-          validate,
+          sanitize: sanitizeRef.current,
+          parse: parseRef.current,
+          validate: validateRef.current,
           buildOnError: buildOptions.onError,
           localOnError: hookOptions.onError,
         }),
