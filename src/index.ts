@@ -54,7 +54,7 @@ function maybeGetSearchParam<TVal>({
   validate: Options<TVal>["validate"];
   buildOnError: Options<TVal>["onError"];
   localOnError: Options<TVal>["onError"];
-  // required because parse has a defualt value
+  // Required because `parse` has a default value
   parse: Required<Options<TVal>>["parse"];
 }) {
   try {
