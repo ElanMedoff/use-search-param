@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.1.4 - 2024-04-27
+
+### Fixed
+
+- Update vitest to jest, vite to tsup. Clean up eslint, prettier, and typescript options.
+
 ## 2.1.3 - 2024-04-26
 
 ### Fixed
