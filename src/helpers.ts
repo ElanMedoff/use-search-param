@@ -3,7 +3,7 @@ export function isWindowUndefined() {
   return typeof window === "undefined";
 }
 
-export function defaultParse(unparsed: unknown): unknown {
+export function defaultParse(unparsed: string): unknown {
   // JSON.parse errors on "undefined"
   if (unparsed === "undefined") return undefined;
 
@@ -15,7 +15,7 @@ export function defaultParse(unparsed: unknown): unknown {
   if (!Number.isNaN(maybeNum)) return maybeNum;
 
   try {
-    return JSON.parse(unparsed as string);
+    return JSON.parse(unparsed);
   } catch {
     return unparsed;
   }
