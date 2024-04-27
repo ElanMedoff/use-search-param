@@ -7,6 +7,7 @@ const config = {
     "plugin:@typescript-eslint/strict-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "prettier",
   ],
   parser: "@typescript-eslint/parser",
@@ -17,6 +18,8 @@ const config = {
   ignorePatterns: ["**/.eslintrc.js", "**/tsup.config.ts", "**/jest.config.js"],
   rules: {
     "@typescript-eslint/unbound-method": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error",
   },
   settings: {
     react: {
