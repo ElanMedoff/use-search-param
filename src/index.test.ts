@@ -1,5 +1,5 @@
-import { renderHook, cleanup } from "@testing-library/react-hooks";
-import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
+import { act, renderHook } from "@testing-library/react-hooks";
+import { describe, expect, it, beforeEach } from "@jest/globals";
 import * as helpers from "./helpers";
 import {
   type BuildOptions,
@@ -9,8 +9,6 @@ import {
   useSearchParam,
 } from "./index";
 import { z } from "zod";
-
-afterEach(cleanup);
 
 interface GetResultParams<T> {
   buildOptions?: BuildOptions;
@@ -23,8 +21,8 @@ function testExport(
 ) {
   describe(exportName, () => {
     beforeEach(() => {
-      vi.spyOn(window.history, "pushState");
-      vi.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
+      jest.spyOn(window.history, "pushState");
+      jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
 
       Object.defineProperty(window, "location", {
         writable: true,
@@ -35,7 +33,7 @@ function testExport(
     describe("initial state", () => {
       describe("with window undefined", () => {
         beforeEach(() => {
-          vi.spyOn(helpers, "isWindowUndefined").mockReturnValue(true);
+          jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(true);
         });
 
         it("with a serverSideSearchParams option, it should dehydrate the search param", () => {
@@ -101,7 +99,7 @@ function testExport(
           it("when passed a parse option, it should use it", () => {
             const result = getResult({
               buildOptions: {
-                parse: (unparsed) => JSON.parse(unparsed) + 1,
+                parse: (unparsed) => (JSON.parse(unparsed) as number) + 1,
               },
             });
             expect(result).toBe(2);
@@ -110,10 +108,10 @@ function testExport(
           it("when passed a parse from the hook options and build options, it should call the hook option", () => {
             const result = getResult({
               buildOptions: {
-                parse: (unparsed) => JSON.parse(unparsed) + 1,
+                parse: (unparsed) => (JSON.parse(unparsed) as number) + 1,
               },
               localOptions: {
-                parse: (unparsed) => JSON.parse(unparsed) + 2,
+                parse: (unparsed) => (JSON.parse(unparsed) as number) + 2,
               },
             });
             expect(result).toBe(3);
@@ -122,7 +120,7 @@ function testExport(
 
         describe("error options", () => {
           it("when passed an onError, it should call it on error", () => {
-            const onError = vi.fn();
+            const onError = jest.fn();
             const result = getResult({
               buildOptions: {
                 onError,
@@ -131,7 +129,7 @@ function testExport(
                 },
               },
             });
-            expect(onError).toHaveBeenCalledOnce();
+            expect(onError).toHaveBeenCalledTimes(1);
             expect(result).toBe(null);
           });
 
@@ -141,7 +139,7 @@ function testExport(
               value: { search: "?counter=asdf" },
             });
             const schema = z.number();
-            const onError = vi.fn();
+            const onError = jest.fn();
             const result = getResult({
               buildOptions: {
                 onError,
@@ -150,13 +148,13 @@ function testExport(
                 validate: schema.parse,
               },
             });
-            expect(onError).toHaveBeenCalledOnce();
+            expect(onError).toHaveBeenCalledTimes(1);
             expect(result).toBe(null);
           });
 
           it("when passed an onError from the hook options and build options, it should call both on error", () => {
-            const buildOnError = vi.fn();
-            const hookOnError = vi.fn();
+            const buildOnError = jest.fn();
+            const hookOnError = jest.fn();
             const result = getResult({
               buildOptions: {
                 onError: buildOnError,
@@ -168,8 +166,8 @@ function testExport(
                 onError: hookOnError,
               },
             });
-            expect(buildOnError).toHaveBeenCalledOnce();
-            expect(hookOnError).toHaveBeenCalledOnce();
+            expect(buildOnError).toHaveBeenCalledTimes(1);
+            expect(hookOnError).toHaveBeenCalledTimes(1);
             expect(result).toBe(null);
           });
 
@@ -178,8 +176,8 @@ function testExport(
               writable: true,
               value: { search: "?counter=asdf" },
             });
-            const buildOnError = vi.fn();
-            const localOnError = vi.fn();
+            const buildOnError = jest.fn();
+            const localOnError = jest.fn();
 
             const schema = z.number();
             const result = getResult({
@@ -191,8 +189,8 @@ function testExport(
                 validate: schema.parse,
               },
             });
-            expect(buildOnError).toHaveBeenCalledOnce();
-            expect(localOnError).toHaveBeenCalledOnce();
+            expect(buildOnError).toHaveBeenCalledTimes(1);
+            expect(localOnError).toHaveBeenCalledTimes(1);
             expect(result).toBe(null);
           });
         });
@@ -219,7 +217,7 @@ function testExport(
           it("when passed a parse option, it should use it", () => {
             const result = getResult({
               localOptions: {
-                parse: (unparsed) => JSON.parse(unparsed) + 1,
+                parse: (unparsed) => (JSON.parse(unparsed) as number) + 1,
               },
             });
             expect(result).toBe(2);
@@ -237,7 +235,7 @@ function testExport(
 
         describe("error options", () => {
           it("when passed an onError, it should call it on error", () => {
-            const onError = vi.fn();
+            const onError = jest.fn();
             const result = getResult({
               localOptions: {
                 onError,
@@ -246,7 +244,7 @@ function testExport(
                 },
               },
             });
-            expect(onError).toHaveBeenCalledOnce();
+            expect(onError).toHaveBeenCalledTimes(1);
             expect(result).toBe(null);
           });
 
@@ -255,7 +253,7 @@ function testExport(
               writable: true,
               value: { search: "?counter=asdf" },
             });
-            const onError = vi.fn();
+            const onError = jest.fn();
             const schema = z.number();
             const result = getResult({
               localOptions: {
@@ -263,7 +261,7 @@ function testExport(
                 validate: schema.parse,
               },
             });
-            expect(onError).toHaveBeenCalledOnce();
+            expect(onError).toHaveBeenCalledTimes(1);
             expect(result).toBe(null);
           });
         });
@@ -274,8 +272,8 @@ function testExport(
 
 describe("useSearchParam events", () => {
   beforeEach(() => {
-    vi.spyOn(window.history, "pushState");
-    vi.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
+    jest.spyOn(window.history, "pushState");
+    jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
   });
 
   it("should update the state on the popstate event", () => {
@@ -290,7 +288,9 @@ describe("useSearchParam events", () => {
       writable: true,
       value: { search: "?counter=2" },
     });
-    dispatchEvent(new Event("popstate"));
+    act(() => {
+      dispatchEvent(new Event("popstate"));
+    });
     expect(result.current).toBe(2);
   });
 });

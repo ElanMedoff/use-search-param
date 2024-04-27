@@ -1,16 +1,31 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    // based on https://www.totaltypescript.com/tsconfig-cheat-sheet
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    "target": "ES6",
+    "moduleDetection": "force",
     "isolatedModules": true,
-    "noEmit": true,
+    "module": "NodeNext",
+    "sourceMap": true,
+    "declaration": true,
+
+    // strictest ts options
     "strict": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "jsx": "react"
+    "useUnknownInCatchVariables": true
   },
   "include": ["src"]
 }
