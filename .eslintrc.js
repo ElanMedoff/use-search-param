@@ -15,7 +15,12 @@ const config = {
     project: true,
   },
   plugins: ["@typescript-eslint"],
-  ignorePatterns: ["**/.eslintrc.js", "**/tsup.config.ts", "**/jest.config.js"],
+  ignorePatterns: [
+    "**/.eslintrc.js",
+    "**/tsup.config.ts",
+    "**/jest.config.js",
+    "**/.prettierrc.js",
+  ],
   rules: {
     "@typescript-eslint/unbound-method": "off",
     "react-hooks/rules-of-hooks": "error",
