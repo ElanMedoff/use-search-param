@@ -50,11 +50,10 @@ function maybeGetSearchParam<TVal>({
 }: {
   searchParamKey: string;
   serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
-  sanitize: Options<TVal>["sanitize"];
-  validate: Options<TVal>["validate"];
+  sanitize: Required<Options<TVal>>["sanitize"];
+  validate: Required<Options<TVal>>["validate"];
   buildOnError: Options<TVal>["onError"];
   localOnError: Options<TVal>["onError"];
-  // Required because `parse` has a default value
   parse: Required<Options<TVal>>["parse"];
 }) {
   try {
@@ -79,12 +78,9 @@ function maybeGetSearchParam<TVal>({
       return null;
     }
 
-    const sanitized =
-      sanitize instanceof Function
-        ? sanitize(rawSearchParamVal)
-        : rawSearchParamVal;
+    const sanitized = sanitize(rawSearchParamVal);
     const parsed = parse(sanitized);
-    const validated = validate instanceof Function ? validate(parsed) : parsed;
+    const validated = validate(parsed);
 
     return validated;
   } catch (e) {
@@ -113,8 +109,13 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       localOptions.parse ??
       (buildOptions.parse as Options<TVal>["parse"]) ??
       (defaultParse as Required<Options<TVal>>["parse"]);
-    const sanitize = localOptions.sanitize ?? buildOptions.sanitize;
-    const { validate, serverSideSearchParams } = localOptions;
+    const sanitize =
+      localOptions.sanitize ??
+      buildOptions.sanitize ??
+      ((unsanitized: string) => unsanitized);
+    const validate =
+      localOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
+    const { serverSideSearchParams } = localOptions;
 
     return maybeGetSearchParam({
       searchParamKey,
@@ -149,8 +150,13 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       hookOptions.parse ??
       (buildOptions.parse as Options<TVal>["parse"]) ??
       (defaultParse as Required<Options<TVal>>["parse"]);
-    const sanitizeOption = hookOptions.sanitize ?? buildOptions.sanitize;
-    const { serverSideSearchParams, validate: validateOption } = hookOptions;
+    const sanitizeOption =
+      hookOptions.sanitize ??
+      buildOptions.sanitize ??
+      ((unsanitized: string) => unsanitized);
+    const validateOption =
+      hookOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
+    const { serverSideSearchParams } = hookOptions;
 
     const parseRef = React.useRef(parseOption);
     const sanitizeRef = React.useRef(sanitizeOption);
