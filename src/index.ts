@@ -2,9 +2,9 @@ import React from "react";
 import { defaultParse, isWindowUndefined } from "./helpers";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useStableCallback<Callback extends (...args: any[]) => any>(
-  cb: Callback,
-): Callback {
+export function useStableCallback<TCb extends (...args: any[]) => any>(
+  cb: TCb,
+): TCb {
   const cbRef = React.useRef(cb);
   React.useEffect(() => {
     cbRef.current = cb;
@@ -13,7 +13,7 @@ export function useStableCallback<Callback extends (...args: any[]) => any>(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-    ((...args) => cbRef.current(...args)) as Callback,
+    ((...args) => cbRef.current(...args)) as TCb,
     [],
   );
 }
