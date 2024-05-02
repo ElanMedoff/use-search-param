@@ -184,14 +184,6 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
     const buildOnError = useStableCallback(buildOnErrorOption);
     const hookOnError = useStableCallback(hookOnErrorOption);
 
-    // React.useEffect(() => {
-    //   parseRef.current = parseOption;
-    //   sanitizeRef.current = sanitizeOption;
-    //   validateRef.current = validateOption;
-    //   buildOnErrorRef.current = buildOptions.onError;
-    //   hookOnErrorRef.current = hookOptions.onError;
-    // });
-
     React.useEffect(() => {
       const onEvent = () => {
         const newSearchParamVal = maybeGetSearchParam({
