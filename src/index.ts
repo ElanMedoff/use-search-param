@@ -1,6 +1,23 @@
 import React from "react";
 import { defaultParse, isWindowUndefined } from "./helpers";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useStableCallback<TCb extends (...args: any[]) => any>(
+  cb: TCb,
+): TCb {
+  const cbRef = React.useRef(cb);
+  React.useEffect(() => {
+    cbRef.current = cb;
+  }, [cb]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
+    ((...args) => cbRef.current(...args)) as TCb,
+    [],
+  );
+}
+
 // TODO: rename back to UseSearchParamOptions?
 interface Options<TVal> {
   /**
@@ -50,11 +67,10 @@ function maybeGetSearchParam<TVal>({
 }: {
   searchParamKey: string;
   serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
-  sanitize: Options<TVal>["sanitize"];
-  validate: Options<TVal>["validate"];
+  sanitize: Required<Options<TVal>>["sanitize"];
+  validate: Required<Options<TVal>>["validate"];
   buildOnError: Options<TVal>["onError"];
   localOnError: Options<TVal>["onError"];
-  // Required because `parse` has a default value
   parse: Required<Options<TVal>>["parse"];
 }) {
   try {
@@ -79,12 +95,9 @@ function maybeGetSearchParam<TVal>({
       return null;
     }
 
-    const sanitized =
-      sanitize instanceof Function
-        ? sanitize(rawSearchParamVal)
-        : rawSearchParamVal;
+    const sanitized = sanitize(rawSearchParamVal);
     const parsed = parse(sanitized);
-    const validated = validate instanceof Function ? validate(parsed) : parsed;
+    const validated = validate(parsed);
 
     return validated;
   } catch (e) {
@@ -113,8 +126,13 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       localOptions.parse ??
       (buildOptions.parse as Options<TVal>["parse"]) ??
       (defaultParse as Required<Options<TVal>>["parse"]);
-    const sanitize = localOptions.sanitize ?? buildOptions.sanitize;
-    const { validate, serverSideSearchParams } = localOptions;
+    const sanitize =
+      localOptions.sanitize ??
+      buildOptions.sanitize ??
+      ((unsanitized: string) => unsanitized);
+    const validate =
+      localOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
+    const { serverSideSearchParams } = localOptions;
 
     return maybeGetSearchParam({
       searchParamKey,
@@ -149,33 +167,33 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       hookOptions.parse ??
       (buildOptions.parse as Options<TVal>["parse"]) ??
       (defaultParse as Required<Options<TVal>>["parse"]);
-    const sanitizeOption = hookOptions.sanitize ?? buildOptions.sanitize;
-    const { serverSideSearchParams, validate: validateOption } = hookOptions;
+    const sanitizeOption =
+      hookOptions.sanitize ??
+      buildOptions.sanitize ??
+      ((unsanitized: string) => unsanitized);
+    const validateOption =
+      hookOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
+    const buildOnErrorOption = buildOptions.onError ?? (() => {});
+    const hookOnErrorOption = hookOptions.onError ?? (() => {});
 
-    const parseRef = React.useRef(parseOption);
-    const sanitizeRef = React.useRef(sanitizeOption);
-    const validateRef = React.useRef(validateOption);
-    const buildOnErrorRef = React.useRef(buildOptions.onError);
-    const hookOnErrorRef = React.useRef(hookOptions.onError);
+    const { serverSideSearchParams } = hookOptions;
 
-    React.useEffect(() => {
-      parseRef.current = parseOption;
-      sanitizeRef.current = sanitizeOption;
-      validateRef.current = validateOption;
-      buildOnErrorRef.current = buildOptions.onError;
-      hookOnErrorRef.current = hookOptions.onError;
-    });
+    const parse = useStableCallback(parseOption);
+    const sanitize = useStableCallback(sanitizeOption);
+    const validate = useStableCallback(validateOption);
+    const buildOnError = useStableCallback(buildOnErrorOption);
+    const hookOnError = useStableCallback(hookOnErrorOption);
 
     React.useEffect(() => {
       const onEvent = () => {
         const newSearchParamVal = maybeGetSearchParam({
           searchParamKey,
           serverSideSearchParams,
-          sanitize: sanitizeRef.current,
-          parse: parseRef.current,
-          validate: validateRef.current,
-          buildOnError: buildOnErrorRef.current,
-          localOnError: hookOnErrorRef.current,
+          sanitize,
+          parse,
+          validate,
+          buildOnError,
+          localOnError: hookOnError,
         });
 
         setSearchParamVal(newSearchParamVal);
@@ -184,18 +202,26 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       return () => {
         window.removeEventListener("popstate", onEvent);
       };
-    }, [searchParamKey, serverSideSearchParams]);
+    }, [
+      buildOnError,
+      hookOnError,
+      parse,
+      sanitize,
+      searchParamKey,
+      serverSideSearchParams,
+      validate,
+    ]);
 
     const [searchParamVal, setSearchParamVal] = React.useState<TVal | null>(
       () =>
         maybeGetSearchParam({
           searchParamKey,
           serverSideSearchParams,
-          sanitize: sanitizeRef.current,
-          parse: parseRef.current,
-          validate: validateRef.current,
-          buildOnError: buildOptions.onError,
-          localOnError: hookOptions.onError,
+          sanitize,
+          parse,
+          validate,
+          buildOnError,
+          localOnError: hookOnError,
         }),
     );
 
