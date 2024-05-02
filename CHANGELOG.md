@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.1.5 - 2024-05-01
+
+### Fixed
+
+- Add `useStableCallback` hook to simpilify the ref-based solution introduced in 2.1.3.
+
 ## 2.1.4 - 2024-04-27
 
 ### Fixed
