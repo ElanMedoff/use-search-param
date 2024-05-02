@@ -2,11 +2,12 @@
 
 A React hook to safely and easily read from URL search params.
 
-[![npm](https://img.shields.io/npm/v/use-search-param)](https://www.npmjs.com/package/use-search-param)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/use-search-param)](https://bundlephobia.com/package/use-search-param)
-[![npm](https://img.shields.io/npm/dw/use-search-param)](https://www.npmjs.com/package/use-search-param)
-[![NPM](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
-[![Static Badge](https://img.shields.io/badge/dependencies%20-%200%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
+[![version](https://img.shields.io/npm/v/use-search-param)](https://www.npmjs.com/package/use-search-param)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/use-search-param)](https://bundlephobia.com/package/use-search-param)
+[![downloads per week](https://img.shields.io/npm/dw/use-search-param)](https://www.npmjs.com/package/use-search-param)
+[![package quality](https://packagequality.com/shield/use-search-param.svg)](https://packagequality.com/#?package=use-search-param)
+[![license](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
+[![dependencies](https://img.shields.io/badge/dependencies%20-%200%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
 
 <!-- a hack to get around github sanitizing styles from markdown -->
 <br>
@@ -15,8 +16,6 @@ A React hook to safely and easily read from URL search params.
 </p>
 
 ## Basic usage
-
-[Code sandbox](https://codesandbox.io/p/sandbox/use-search-param-example-59r393)
 
 ```tsx
 import { useSearchParam } from "use-search-param";

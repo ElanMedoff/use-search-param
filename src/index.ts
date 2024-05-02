@@ -1,6 +1,23 @@
 import React from "react";
 import { defaultParse, isWindowUndefined } from "./helpers";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function useStableCallback<Callback extends (...args: any[]) => any>(
+  cb: Callback,
+): Callback {
+  const cbRef = React.useRef(cb);
+  React.useEffect(() => {
+    cbRef.current = cb;
+  }, [cb]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
+    ((...args) => cbRef.current(...args)) as Callback,
+    [],
+  );
+}
+
 // TODO: rename back to UseSearchParamOptions?
 interface Options<TVal> {
   /**
@@ -156,32 +173,35 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       ((unsanitized: string) => unsanitized);
     const validateOption =
       hookOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
+    const buildOnErrorOption = buildOptions.onError ?? (() => {});
+    const hookOnErrorOption = hookOptions.onError ?? (() => {});
+
     const { serverSideSearchParams } = hookOptions;
 
-    const parseRef = React.useRef(parseOption);
-    const sanitizeRef = React.useRef(sanitizeOption);
-    const validateRef = React.useRef(validateOption);
-    const buildOnErrorRef = React.useRef(buildOptions.onError);
-    const hookOnErrorRef = React.useRef(hookOptions.onError);
+    const parse = useStableCallback(parseOption);
+    const sanitize = useStableCallback(sanitizeOption);
+    const validate = useStableCallback(validateOption);
+    const buildOnError = useStableCallback(buildOnErrorOption);
+    const hookOnError = useStableCallback(hookOnErrorOption);
 
-    React.useEffect(() => {
-      parseRef.current = parseOption;
-      sanitizeRef.current = sanitizeOption;
-      validateRef.current = validateOption;
-      buildOnErrorRef.current = buildOptions.onError;
-      hookOnErrorRef.current = hookOptions.onError;
-    });
+    // React.useEffect(() => {
+    //   parseRef.current = parseOption;
+    //   sanitizeRef.current = sanitizeOption;
+    //   validateRef.current = validateOption;
+    //   buildOnErrorRef.current = buildOptions.onError;
+    //   hookOnErrorRef.current = hookOptions.onError;
+    // });
 
     React.useEffect(() => {
       const onEvent = () => {
         const newSearchParamVal = maybeGetSearchParam({
           searchParamKey,
           serverSideSearchParams,
-          sanitize: sanitizeRef.current,
-          parse: parseRef.current,
-          validate: validateRef.current,
-          buildOnError: buildOnErrorRef.current,
-          localOnError: hookOnErrorRef.current,
+          sanitize,
+          parse,
+          validate,
+          buildOnError,
+          localOnError: hookOnError,
         });
 
         setSearchParamVal(newSearchParamVal);
@@ -190,18 +210,26 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       return () => {
         window.removeEventListener("popstate", onEvent);
       };
-    }, [searchParamKey, serverSideSearchParams]);
+    }, [
+      buildOnError,
+      hookOnError,
+      parse,
+      sanitize,
+      searchParamKey,
+      serverSideSearchParams,
+      validate,
+    ]);
 
     const [searchParamVal, setSearchParamVal] = React.useState<TVal | null>(
       () =>
         maybeGetSearchParam({
           searchParamKey,
           serverSideSearchParams,
-          sanitize: sanitizeRef.current,
-          parse: parseRef.current,
-          validate: validateRef.current,
-          buildOnError: buildOptions.onError,
-          localOnError: hookOptions.onError,
+          sanitize,
+          parse,
+          validate,
+          buildOnError,
+          localOnError: hookOnError,
         }),
     );
 
