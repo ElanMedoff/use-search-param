@@ -1,24 +1,6 @@
-import React from "react";
-import { defaultParse, isWindowUndefined } from "./helpers";
+import { defaultParse, hash, isWindowUndefined } from "./helpers";
+import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useStableCallback<TCb extends (...args: any[]) => any>(
-  cb: TCb,
-): TCb {
-  const cbRef = React.useRef(cb);
-  React.useEffect(() => {
-    cbRef.current = cb;
-  }, [cb]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return React.useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-    ((...args) => cbRef.current(...args)) as TCb,
-    [],
-  );
-}
-
-// TODO: rename back to UseSearchParamOptions?
 interface Options<TVal> {
   /**
    * @param `unsanitized` The raw string pulled from the URL search param.
@@ -149,6 +131,34 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
 const getSearchParam = buildGetSearchParam();
 
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
+  const nativeEventNames = ["popstate", "hashchange"] as const;
+  const customEventNames = ["pushState", "replaceState"] as const;
+  const eventNames = [...nativeEventNames, ...customEventNames];
+
+  // from Wouter: https://github.com/molefrog/wouter/blob/e106a9dd27cde242b139e27fa8ac2fdb218fc523/packages/wouter/src/use-browser-location.js#L17
+  const subscribeToEventUpdates = (callback: (event: Event) => void) => {
+    for (const eventName of eventNames) {
+      window.addEventListener(eventName, callback);
+    }
+    return () => {
+      for (const eventName of eventNames) {
+        window.removeEventListener(eventName, callback);
+      }
+    };
+  };
+
+  if (typeof history !== "undefined") {
+    for (const eventName of customEventNames) {
+      const original = history[eventName];
+      history[eventName] = function (...args) {
+        const result = original.apply(this, args);
+        const event = new Event(eventName);
+        dispatchEvent(event);
+        return result;
+      };
+    }
+  }
+
   return function useSearchParam<TVal>(
     /**
      * The name of the URL search param to read from and write to.
@@ -178,51 +188,25 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
 
     const { serverSideSearchParams } = hookOptions;
 
-    const parse = useStableCallback(parseOption);
-    const sanitize = useStableCallback(sanitizeOption);
-    const validate = useStableCallback(validateOption);
-    const buildOnError = useStableCallback(buildOnErrorOption);
-    const hookOnError = useStableCallback(hookOnErrorOption);
-
-    React.useEffect(() => {
-      const onEvent = () => {
-        const newSearchParamVal = maybeGetSearchParam({
-          searchParamKey,
-          serverSideSearchParams,
-          sanitize,
-          parse,
-          validate,
-          buildOnError,
-          localOnError: hookOnError,
-        });
-
-        setSearchParamVal(newSearchParamVal);
-      };
-      window.addEventListener("popstate", onEvent);
-      return () => {
-        window.removeEventListener("popstate", onEvent);
-      };
-    }, [
-      buildOnError,
-      hookOnError,
-      parse,
-      sanitize,
-      searchParamKey,
-      serverSideSearchParams,
-      validate,
-    ]);
-
-    const [searchParamVal, setSearchParamVal] = React.useState<TVal | null>(
-      () =>
-        maybeGetSearchParam({
-          searchParamKey,
-          serverSideSearchParams,
-          sanitize,
-          parse,
-          validate,
-          buildOnError,
-          localOnError: hookOnError,
-        }),
+    const getSnapshot = () =>
+      maybeGetSearchParam({
+        searchParamKey,
+        serverSideSearchParams,
+        sanitize: sanitizeOption,
+        parse: parseOption,
+        validate: validateOption,
+        buildOnError: buildOnErrorOption,
+        localOnError: hookOnErrorOption,
+      });
+    const searchParamVal = useSyncExternalStoreWithSelector<
+      TVal | null,
+      TVal | null
+    >(
+      subscribeToEventUpdates,
+      getSnapshot,
+      getSnapshot,
+      (snapshot) => snapshot,
+      (a, b) => hash(a) === hash(b),
     );
 
     return searchParamVal;
