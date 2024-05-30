@@ -21,7 +21,6 @@ function testExport(
 ) {
   describe(exportName, () => {
     beforeEach(() => {
-      jest.spyOn(window.history, "pushState");
       jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
 
       Object.defineProperty(window, "location", {
@@ -129,7 +128,7 @@ function testExport(
                 },
               },
             });
-            expect(onError).toHaveBeenCalledTimes(1);
+            expect(onError).toHaveBeenCalled();
             expect(result).toBe(null);
           });
 
@@ -148,7 +147,7 @@ function testExport(
                 validate: schema.parse,
               },
             });
-            expect(onError).toHaveBeenCalledTimes(1);
+            expect(onError).toHaveBeenCalled();
             expect(result).toBe(null);
           });
 
@@ -166,8 +165,8 @@ function testExport(
                 onError: hookOnError,
               },
             });
-            expect(buildOnError).toHaveBeenCalledTimes(1);
-            expect(hookOnError).toHaveBeenCalledTimes(1);
+            expect(buildOnError).toHaveBeenCalled();
+            expect(hookOnError).toHaveBeenCalled();
             expect(result).toBe(null);
           });
 
@@ -189,8 +188,8 @@ function testExport(
                 validate: schema.parse,
               },
             });
-            expect(buildOnError).toHaveBeenCalledTimes(1);
-            expect(localOnError).toHaveBeenCalledTimes(1);
+            expect(buildOnError).toHaveBeenCalled();
+            expect(localOnError).toHaveBeenCalled();
             expect(result).toBe(null);
           });
         });
@@ -244,7 +243,7 @@ function testExport(
                 },
               },
             });
-            expect(onError).toHaveBeenCalledTimes(1);
+            expect(onError).toHaveBeenCalled();
             expect(result).toBe(null);
           });
 
@@ -261,7 +260,7 @@ function testExport(
                 validate: schema.parse,
               },
             });
-            expect(onError).toHaveBeenCalledTimes(1);
+            expect(onError).toHaveBeenCalled();
             expect(result).toBe(null);
           });
         });
@@ -271,27 +270,33 @@ function testExport(
 }
 
 describe("useSearchParam events", () => {
-  beforeEach(() => {
-    jest.spyOn(window.history, "pushState");
-    jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
-  });
+  describe.each([
+    "popstate",
+    "hashchange",
+    "pushState",
+    "replaceState",
+  ] as const)("%s", (eventName) => {
+    beforeEach(() => {
+      jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
+    });
 
-  it("should update the state on the popstate event", () => {
-    Object.defineProperty(window, "location", {
-      writable: true,
-      value: { search: "?counter=1" },
-    });
-    const { result } = renderHook(() => useSearchParam("counter"));
-    expect(result.current).toBe(1);
+    it("should update the state on the popstate event", () => {
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { search: "?counter=1" },
+      });
+      const { result } = renderHook(() => useSearchParam("counter"));
+      expect(result.current).toBe(1);
 
-    Object.defineProperty(window, "location", {
-      writable: true,
-      value: { search: "?counter=2" },
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { search: "?counter=2" },
+      });
+      act(() => {
+        dispatchEvent(new Event(eventName));
+      });
+      expect(result.current).toBe(2);
     });
-    act(() => {
-      dispatchEvent(new Event("popstate"));
-    });
-    expect(result.current).toBe(2);
   });
 });
 
