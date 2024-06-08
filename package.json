@@ -1,6 +1,6 @@
 {
   "name": "use-search-param",
-  "version": "2.1.5",
+  "version": "2.2.0",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
@@ -21,6 +21,9 @@
     "prettier": "prettier src/** --write",
     "lint": "eslint src/**"
   },
+  "dependencies": {
+    "use-sync-external-store": "1.2.2"
+  },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "@testing-library/react-hooks": "^8.0.1",
@@ -28,6 +31,7 @@
     "@types/node": "^20.8.2",
     "@types/react": "^16.8.0",
     "@types/react-dom": "^16.8.0",
+    "@types/use-sync-external-store": "^0.0.6",
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",

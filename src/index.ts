@@ -1,24 +1,6 @@
-import React from "react";
 import { defaultParse, isWindowUndefined } from "./helpers";
+import { useSyncExternalStore } from "use-sync-external-store/shim";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function useStableCallback<TCb extends (...args: any[]) => any>(
-  cb: TCb,
-): TCb {
-  const cbRef = React.useRef(cb);
-  React.useEffect(() => {
-    cbRef.current = cb;
-  }, [cb]);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return React.useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-    ((...args) => cbRef.current(...args)) as TCb,
-    [],
-  );
-}
-
-// TODO: rename back to UseSearchParamOptions?
 interface Options<TVal> {
   /**
    * @param `unsanitized` The raw string pulled from the URL search param.
@@ -56,22 +38,44 @@ type BuildOptions = Pick<Options<unknown>, "sanitize" | "parse" | "onError">;
 // TODO: deprecate next major version
 type BuildUseSearchParamOptions = BuildOptions;
 
-function maybeGetSearchParam<TVal>({
-  searchParamKey,
-  serverSideSearchParams,
+function getProcessedSearchParamVal<TVal>({
+  rawSearchParamVal,
   sanitize,
   parse,
   validate,
   buildOnError,
   localOnError,
 }: {
-  searchParamKey: string;
-  serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
+  rawSearchParamVal: string;
   sanitize: Required<Options<TVal>>["sanitize"];
   validate: Required<Options<TVal>>["validate"];
   buildOnError: Options<TVal>["onError"];
   localOnError: Options<TVal>["onError"];
   parse: Required<Options<TVal>>["parse"];
+}) {
+  try {
+    const sanitized = sanitize(rawSearchParamVal);
+    const parsed = parse(sanitized);
+    const validated = validate(parsed);
+
+    return validated;
+  } catch (e) {
+    buildOnError?.(e);
+    localOnError?.(e);
+    return null;
+  }
+}
+
+function getRawSearchParamVal<TVal>({
+  searchParamKey,
+  serverSideSearchParams,
+  buildOnError,
+  localOnError,
+}: {
+  searchParamKey: string;
+  serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
+  buildOnError: Options<TVal>["onError"];
+  localOnError: Options<TVal>["onError"];
 }) {
   try {
     let search: string | null;
@@ -95,11 +99,7 @@ function maybeGetSearchParam<TVal>({
       return null;
     }
 
-    const sanitized = sanitize(rawSearchParamVal);
-    const parsed = parse(sanitized);
-    const validated = validate(parsed);
-
-    return validated;
+    return rawSearchParamVal;
   } catch (e) {
     buildOnError?.(e);
     localOnError?.(e);
@@ -134,9 +134,18 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       localOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
     const { serverSideSearchParams } = localOptions;
 
-    return maybeGetSearchParam({
+    const rawSearchParamVal = getRawSearchParamVal({
       searchParamKey,
       serverSideSearchParams,
+      buildOnError: buildOptions.onError,
+      localOnError: localOptions.onError,
+    });
+    if (rawSearchParamVal === null) {
+      return null;
+    }
+
+    return getProcessedSearchParamVal({
+      rawSearchParamVal,
       sanitize,
       parse,
       validate,
@@ -146,9 +155,34 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
   };
 }
 
-const getSearchParam = buildGetSearchParam();
-
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
+  const nativeEventNames = ["popstate"] as const;
+  const customEventNames = ["pushState", "replaceState"] as const;
+  const eventNames = [...nativeEventNames, ...customEventNames];
+
+  // from Wouter, originally from https://stackoverflow.com/a/4585031
+  if (typeof history !== "undefined") {
+    for (const eventName of customEventNames) {
+      const original = history[eventName];
+      history[eventName] = function (...args) {
+        dispatchEvent(new Event(eventName));
+        return original.apply(this, args);
+      };
+    }
+  }
+
+  // from Wouter: https://github.com/molefrog/wouter/blob/e106a9dd27cde242b139e27fa8ac2fdb218fc523/packages/wouter/src/use-browser-location.js#L17
+  const subscribeToEventUpdates = (callback: (event: Event) => void) => {
+    for (const eventName of eventNames) {
+      window.addEventListener(eventName, callback);
+    }
+    return () => {
+      for (const eventName of eventNames) {
+        window.removeEventListener(eventName, callback);
+      }
+    };
+  };
+
   return function useSearchParam<TVal>(
     /**
      * The name of the URL search param to read from and write to.
@@ -173,63 +207,38 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       ((unsanitized: string) => unsanitized);
     const validateOption =
       hookOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
-    const buildOnErrorOption = buildOptions.onError ?? (() => {});
-    const hookOnErrorOption = hookOptions.onError ?? (() => {});
 
     const { serverSideSearchParams } = hookOptions;
 
-    const parse = useStableCallback(parseOption);
-    const sanitize = useStableCallback(sanitizeOption);
-    const validate = useStableCallback(validateOption);
-    const buildOnError = useStableCallback(buildOnErrorOption);
-    const hookOnError = useStableCallback(hookOnErrorOption);
-
-    React.useEffect(() => {
-      const onEvent = () => {
-        const newSearchParamVal = maybeGetSearchParam({
-          searchParamKey,
-          serverSideSearchParams,
-          sanitize,
-          parse,
-          validate,
-          buildOnError,
-          localOnError: hookOnError,
-        });
-
-        setSearchParamVal(newSearchParamVal);
-      };
-      window.addEventListener("popstate", onEvent);
-      return () => {
-        window.removeEventListener("popstate", onEvent);
-      };
-    }, [
-      buildOnError,
-      hookOnError,
-      parse,
-      sanitize,
-      searchParamKey,
-      serverSideSearchParams,
-      validate,
-    ]);
-
-    const [searchParamVal, setSearchParamVal] = React.useState<TVal | null>(
-      () =>
-        maybeGetSearchParam({
-          searchParamKey,
-          serverSideSearchParams,
-          sanitize,
-          parse,
-          validate,
-          buildOnError,
-          localOnError: hookOnError,
-        }),
+    const getSnapshot = () =>
+      getRawSearchParamVal({
+        searchParamKey,
+        serverSideSearchParams,
+        buildOnError: buildOptions.onError,
+        localOnError: hookOptions.onError,
+      });
+    const rawSearchParamVal = useSyncExternalStore<string | null>(
+      subscribeToEventUpdates,
+      getSnapshot,
+      getSnapshot,
     );
+    if (rawSearchParamVal === null) {
+      return null;
+    }
 
-    return searchParamVal;
+    return getProcessedSearchParamVal({
+      rawSearchParamVal,
+      buildOnError: buildOptions.onError,
+      localOnError: hookOptions.onError,
+      parse: parseOption,
+      sanitize: sanitizeOption,
+      validate: validateOption,
+    });
   };
 }
 
 const useSearchParam = buildUseSearchParam();
+const getSearchParam = buildGetSearchParam();
 
 export {
   useSearchParam,

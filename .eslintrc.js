@@ -21,7 +21,6 @@ const config = {
   ],
   rules: {
     "@typescript-eslint/unbound-method": "off",
-    "@typescript-eslint/no-empty-function": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
   },
