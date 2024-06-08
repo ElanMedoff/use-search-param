@@ -22,7 +22,6 @@
     "lint": "eslint src/**"
   },
   "dependencies": {
-    "is-plain-object": "5.0.0",
     "use-sync-external-store": "1.2.2"
   },
   "devDependencies": {

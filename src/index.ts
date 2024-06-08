@@ -1,5 +1,5 @@
-import { defaultParse, hash, isWindowUndefined } from "./helpers";
-import { useSyncExternalStoreWithSelector } from "use-sync-external-store/shim/with-selector";
+import { defaultParse, isWindowUndefined } from "./helpers";
+import { useSyncExternalStore } from "use-sync-external-store/shim";
 
 interface Options<TVal> {
   /**
@@ -38,22 +38,44 @@ type BuildOptions = Pick<Options<unknown>, "sanitize" | "parse" | "onError">;
 // TODO: deprecate next major version
 type BuildUseSearchParamOptions = BuildOptions;
 
-function maybeGetSearchParam<TVal>({
-  searchParamKey,
-  serverSideSearchParams,
+function maybeGetProcessedSearchParam<TVal>({
+  rawSearchParamVal,
   sanitize,
   parse,
   validate,
   buildOnError,
   localOnError,
 }: {
-  searchParamKey: string;
-  serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
+  rawSearchParamVal: string;
   sanitize: Required<Options<TVal>>["sanitize"];
   validate: Required<Options<TVal>>["validate"];
   buildOnError: Options<TVal>["onError"];
   localOnError: Options<TVal>["onError"];
   parse: Required<Options<TVal>>["parse"];
+}) {
+  try {
+    const sanitized = sanitize(rawSearchParamVal);
+    const parsed = parse(sanitized);
+    const validated = validate(parsed);
+
+    return validated;
+  } catch (e) {
+    buildOnError?.(e);
+    localOnError?.(e);
+    return null;
+  }
+}
+
+function maybeGetRawSearchParam<TVal>({
+  searchParamKey,
+  serverSideSearchParams,
+  buildOnError,
+  localOnError,
+}: {
+  searchParamKey: string;
+  serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
+  buildOnError: Options<TVal>["onError"];
+  localOnError: Options<TVal>["onError"];
 }) {
   try {
     let search: string | null;
@@ -77,11 +99,7 @@ function maybeGetSearchParam<TVal>({
       return null;
     }
 
-    const sanitized = sanitize(rawSearchParamVal);
-    const parsed = parse(sanitized);
-    const validated = validate(parsed);
-
-    return validated;
+    return rawSearchParamVal;
   } catch (e) {
     buildOnError?.(e);
     localOnError?.(e);
@@ -116,9 +134,16 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       localOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
     const { serverSideSearchParams } = localOptions;
 
-    return maybeGetSearchParam({
+    const rawSearchParamVal = maybeGetRawSearchParam({
       searchParamKey,
       serverSideSearchParams,
+      buildOnError: buildOptions.onError,
+      localOnError: localOptions.onError,
+    });
+    if (rawSearchParamVal === null) return null;
+
+    return maybeGetProcessedSearchParam({
+      rawSearchParamVal,
       sanitize,
       parse,
       validate,
@@ -131,7 +156,7 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
 const getSearchParam = buildGetSearchParam();
 
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
-  const nativeEventNames = ["popstate", "hashchange"] as const;
+  const nativeEventNames = ["popstate"] as const;
   const customEventNames = ["pushState", "replaceState"] as const;
   const eventNames = [...nativeEventNames, ...customEventNames];
 
@@ -189,27 +214,26 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
     const { serverSideSearchParams } = hookOptions;
 
     const getSnapshot = () =>
-      maybeGetSearchParam({
+      maybeGetRawSearchParam({
         searchParamKey,
         serverSideSearchParams,
-        sanitize: sanitizeOption,
-        parse: parseOption,
-        validate: validateOption,
         buildOnError: buildOnErrorOption,
         localOnError: hookOnErrorOption,
       });
-    const searchParamVal = useSyncExternalStoreWithSelector<
-      TVal | null,
-      TVal | null
-    >(
+    const rawSearchParamVal = useSyncExternalStore<string | null>(
       subscribeToEventUpdates,
       getSnapshot,
       getSnapshot,
-      (snapshot) => snapshot,
-      (a, b) => hash(a) === hash(b),
     );
-
-    return searchParamVal;
+    if (rawSearchParamVal === null) return null;
+    return maybeGetProcessedSearchParam({
+      rawSearchParamVal,
+      buildOnError: buildOnErrorOption,
+      localOnError: hookOnErrorOption,
+      parse: parseOption,
+      sanitize: sanitizeOption,
+      validate: validateOption,
+    });
   };
 }
 

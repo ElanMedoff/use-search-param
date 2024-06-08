@@ -7,7 +7,7 @@ A React hook to safely and easily read from URL search params.
 [![downloads per week](https://img.shields.io/npm/dw/use-search-param)](https://www.npmjs.com/package/use-search-param)
 [![package quality](https://packagequality.com/shield/use-search-param.svg)](https://packagequality.com/#?package=use-search-param)
 [![license](https://img.shields.io/npm/l/use-search-param)](https://github.com/ElanMedoff/use-search-param/blob/master/LICENSE)
-[![dependencies](https://img.shields.io/badge/dependencies%20-%200%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
+[![dependencies](https://img.shields.io/badge/dependencies%20-%201%20-%20green)](https://github.com/ElanMedoff/use-search-param/blob/master/package.json)
 
 <!-- a hack to get around github sanitizing styles from markdown -->
 <br>
