@@ -8,6 +8,14 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.2.0 - 2024-06-07
+
+### Added
+
+- Monkeypatch `history.pushState` and `history.replaceState` to properly react to `pushState` and `replaceState` events, see this [Wouter comment](https://github.com/molefrog/wouter/blob/e106a9dd27cde242b139e27fa8ac2fdb218fc523/packages/wouter/src/use-browser-location.js#L57) for more infor
+- Refactor to use `useSyncExternalStore`, removes need for `useStableCallback`
+- Add 1 dependency, `use-sync-external-store`
+
 ## 2.1.5 - 2024-05-01
 
 ### Fixed
