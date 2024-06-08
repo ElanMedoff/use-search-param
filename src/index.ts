@@ -194,8 +194,6 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       ((unsanitized: string) => unsanitized);
     const validateOption =
       hookOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
-    const buildOnErrorOption = buildOptions.onError ?? (() => undefined);
-    const hookOnErrorOption = hookOptions.onError ?? (() => undefined);
 
     const { serverSideSearchParams } = hookOptions;
 
@@ -203,8 +201,8 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       getRawSearchParamVal({
         searchParamKey,
         serverSideSearchParams,
-        buildOnError: buildOnErrorOption,
-        localOnError: hookOnErrorOption,
+        buildOnError: buildOptions.onError,
+        localOnError: hookOptions.onError,
       });
     const rawSearchParamVal = useSyncExternalStore<string | null>(
       subscribeToEventUpdates,
@@ -214,8 +212,8 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
     if (rawSearchParamVal === null) return null;
     return getProcessedSearchParamVal({
       rawSearchParamVal,
-      buildOnError: buildOnErrorOption,
-      localOnError: hookOnErrorOption,
+      buildOnError: buildOptions.onError,
+      localOnError: hookOptions.onError,
       parse: parseOption,
       sanitize: sanitizeOption,
       validate: validateOption,
