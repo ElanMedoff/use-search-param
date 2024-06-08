@@ -38,7 +38,7 @@ type BuildOptions = Pick<Options<unknown>, "sanitize" | "parse" | "onError">;
 // TODO: deprecate next major version
 type BuildUseSearchParamOptions = BuildOptions;
 
-function maybeGetProcessedSearchParam<TVal>({
+function getProcessedSearchParamVal<TVal>({
   rawSearchParamVal,
   sanitize,
   parse,
@@ -66,7 +66,7 @@ function maybeGetProcessedSearchParam<TVal>({
   }
 }
 
-function maybeGetRawSearchParam<TVal>({
+function getRawSearchParamVal<TVal>({
   searchParamKey,
   serverSideSearchParams,
   buildOnError,
@@ -134,7 +134,7 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       localOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
     const { serverSideSearchParams } = localOptions;
 
-    const rawSearchParamVal = maybeGetRawSearchParam({
+    const rawSearchParamVal = getRawSearchParamVal({
       searchParamKey,
       serverSideSearchParams,
       buildOnError: buildOptions.onError,
@@ -142,7 +142,7 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
     });
     if (rawSearchParamVal === null) return null;
 
-    return maybeGetProcessedSearchParam({
+    return getProcessedSearchParamVal({
       rawSearchParamVal,
       sanitize,
       parse,
@@ -153,13 +153,11 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
   };
 }
 
-const getSearchParam = buildGetSearchParam();
+const nativeEventNames = ["popstate"] as const;
+const customEventNames = ["pushState", "replaceState"] as const;
+const eventNames = [...nativeEventNames, ...customEventNames];
 
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
-  const nativeEventNames = ["popstate"] as const;
-  const customEventNames = ["pushState", "replaceState"] as const;
-  const eventNames = [...nativeEventNames, ...customEventNames];
-
   // from Wouter: https://github.com/molefrog/wouter/blob/e106a9dd27cde242b139e27fa8ac2fdb218fc523/packages/wouter/src/use-browser-location.js#L17
   const subscribeToEventUpdates = (callback: (event: Event) => void) => {
     for (const eventName of eventNames) {
@@ -171,17 +169,6 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       }
     };
   };
-
-  if (typeof history !== "undefined") {
-    for (const eventName of customEventNames) {
-      const original = history[eventName];
-      history[eventName] = function (...args) {
-        const event = new Event(eventName);
-        dispatchEvent(event);
-        return original.apply(this, args);
-      };
-    }
-  }
 
   return function useSearchParam<TVal>(
     /**
@@ -213,7 +200,7 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
     const { serverSideSearchParams } = hookOptions;
 
     const getSnapshot = () =>
-      maybeGetRawSearchParam({
+      getRawSearchParamVal({
         searchParamKey,
         serverSideSearchParams,
         buildOnError: buildOnErrorOption,
@@ -225,7 +212,7 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       getSnapshot,
     );
     if (rawSearchParamVal === null) return null;
-    return maybeGetProcessedSearchParam({
+    return getProcessedSearchParamVal({
       rawSearchParamVal,
       buildOnError: buildOnErrorOption,
       localOnError: hookOnErrorOption,
@@ -236,7 +223,23 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
   };
 }
 
+function monkeyPatchHistory() {
+  // also from Wouter, originally from https://stackoverflow.com/a/4585031
+  if (typeof history !== "undefined") {
+    for (const eventName of customEventNames) {
+      const original = history[eventName];
+      history[eventName] = function (...args) {
+        const event = new Event(eventName);
+        dispatchEvent(event);
+        return original.apply(this, args);
+      };
+    }
+  }
+}
+
+monkeyPatchHistory();
 const useSearchParam = buildUseSearchParam();
+const getSearchParam = buildGetSearchParam();
 
 export {
   useSearchParam,
