@@ -270,30 +270,28 @@ function testExport(
 }
 
 describe("useSearchParam events", () => {
-  describe.each(["popstate", "pushState", "replaceState"] as const)(
-    "%s",
+  beforeEach(() => {
+    jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
+  });
+
+  it.each(["popstate", "pushState", "replaceState"] as const)(
+    "should update the state on the %s event",
     (eventName) => {
-      beforeEach(() => {
-        jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { search: "?counter=1" },
       });
+      const { result } = renderHook(() => useSearchParam("counter"));
+      expect(result.current).toBe(1);
 
-      it("should update the state on the popstate event", () => {
-        Object.defineProperty(window, "location", {
-          writable: true,
-          value: { search: "?counter=1" },
-        });
-        const { result } = renderHook(() => useSearchParam("counter"));
-        expect(result.current).toBe(1);
-
-        Object.defineProperty(window, "location", {
-          writable: true,
-          value: { search: "?counter=2" },
-        });
-        act(() => {
-          dispatchEvent(new Event(eventName));
-        });
-        expect(result.current).toBe(2);
+      Object.defineProperty(window, "location", {
+        writable: true,
+        value: { search: "?counter=2" },
       });
+      act(() => {
+        dispatchEvent(new Event(eventName));
+      });
+      expect(result.current).toBe(2);
     },
   );
 });
