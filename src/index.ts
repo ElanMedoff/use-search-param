@@ -153,11 +153,23 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
   };
 }
 
-const nativeEventNames = ["popstate"] as const;
-const customEventNames = ["pushState", "replaceState"] as const;
-const eventNames = [...nativeEventNames, ...customEventNames];
-
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
+  const nativeEventNames = ["popstate"] as const;
+  const customEventNames = ["pushState", "replaceState"] as const;
+  const eventNames = [...nativeEventNames, ...customEventNames];
+
+  // from Wouter, originally from https://stackoverflow.com/a/4585031
+  if (typeof history !== "undefined") {
+    for (const eventName of customEventNames) {
+      const original = history[eventName];
+      history[eventName] = function (...args) {
+        const event = new Event(eventName);
+        dispatchEvent(event);
+        return original.apply(this, args);
+      };
+    }
+  }
+
   // from Wouter: https://github.com/molefrog/wouter/blob/e106a9dd27cde242b139e27fa8ac2fdb218fc523/packages/wouter/src/use-browser-location.js#L17
   const subscribeToEventUpdates = (callback: (event: Event) => void) => {
     for (const eventName of eventNames) {
@@ -221,21 +233,6 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
   };
 }
 
-function monkeyPatchHistory() {
-  // also from Wouter, originally from https://stackoverflow.com/a/4585031
-  if (typeof history !== "undefined") {
-    for (const eventName of customEventNames) {
-      const original = history[eventName];
-      history[eventName] = function (...args) {
-        const event = new Event(eventName);
-        dispatchEvent(event);
-        return original.apply(this, args);
-      };
-    }
-  }
-}
-
-monkeyPatchHistory();
 const useSearchParam = buildUseSearchParam();
 const getSearchParam = buildGetSearchParam();
 
