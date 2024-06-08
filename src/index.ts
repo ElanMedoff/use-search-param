@@ -208,8 +208,8 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       ((unsanitized: string) => unsanitized);
     const validateOption =
       hookOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
-    const buildOnErrorOption = buildOptions.onError ?? (() => {});
-    const hookOnErrorOption = hookOptions.onError ?? (() => {});
+    const buildOnErrorOption = buildOptions.onError ?? (() => undefined);
+    const hookOnErrorOption = hookOptions.onError ?? (() => undefined);
 
     const { serverSideSearchParams } = hookOptions;
 
