@@ -15,6 +15,13 @@ interface GetResultParams<T> {
   localOptions?: Options<T>;
 }
 
+function mockLocationSearch(search: string) {
+  Object.defineProperty(window, "location", {
+    writable: true,
+    value: { search },
+  });
+}
+
 function testExport(
   exportName: string,
   getResult: (params?: GetResultParams<number>) => number | null,
@@ -22,11 +29,7 @@ function testExport(
   describe(exportName, () => {
     beforeEach(() => {
       jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
-
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { search: "" },
-      });
+      mockLocationSearch("");
     });
 
     describe("initial state", () => {
@@ -56,10 +59,7 @@ function testExport(
       });
 
       it("with a search param in the url, it should parse the search param", () => {
-        Object.defineProperty(window, "location", {
-          writable: true,
-          value: { search: "?counter=1" },
-        });
+        mockLocationSearch("?counter=1");
 
         const result = getResult();
         expect(result).toBe(1);
@@ -67,10 +67,7 @@ function testExport(
 
       describe("build options", () => {
         beforeEach(() => {
-          Object.defineProperty(window, "location", {
-            writable: true,
-            value: { search: "?counter=1" },
-          });
+          mockLocationSearch("?counter=1");
         });
 
         describe("hyration options", () => {
@@ -133,10 +130,7 @@ function testExport(
           });
 
           it("when pass an onError, it should call it on validation errors", () => {
-            Object.defineProperty(window, "location", {
-              writable: true,
-              value: { search: "?counter=asdf" },
-            });
+            mockLocationSearch("?counter=asdf");
             const schema = z.number();
             const onError = jest.fn();
             const result = getResult({
@@ -171,10 +165,7 @@ function testExport(
           });
 
           it("when passed an onError from the hook options and build options, it should call both on validation errors", () => {
-            Object.defineProperty(window, "location", {
-              writable: true,
-              value: { search: "?counter=asdf" },
-            });
+            mockLocationSearch("?counter=asdf");
             const buildOnError = jest.fn();
             const localOnError = jest.fn();
 
@@ -197,10 +188,7 @@ function testExport(
 
       describe("hook options", () => {
         beforeEach(() => {
-          Object.defineProperty(window, "location", {
-            writable: true,
-            value: { search: "?counter=1" },
-          });
+          mockLocationSearch("?counter=1");
         });
 
         describe("hyration options", () => {
@@ -248,10 +236,7 @@ function testExport(
           });
 
           it("when passed an onError, it should call it on validation error", () => {
-            Object.defineProperty(window, "location", {
-              writable: true,
-              value: { search: "?counter=asdf" },
-            });
+            mockLocationSearch("?counter=asdf");
             const onError = jest.fn();
             const schema = z.number();
             const result = getResult({
@@ -274,22 +259,28 @@ describe("useSearchParam events", () => {
     jest.spyOn(helpers, "isWindowUndefined").mockReturnValue(false);
   });
 
-  it.each(["popstate", "pushState", "replaceState"] as const)(
+  it("should update the state on the popstate event", () => {
+    mockLocationSearch("?counter=1");
+    const { result } = renderHook(() => useSearchParam("counter"));
+    expect(result.current).toBe(1);
+
+    mockLocationSearch("?counter=2");
+    act(() => {
+      dispatchEvent(new Event("popstate"));
+    });
+    expect(result.current).toBe(2);
+  });
+
+  it.each(["pushState", "replaceState"] as const)(
     "should update the state on the %s event",
     (eventName) => {
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { search: "?counter=1" },
-      });
+      mockLocationSearch("?counter=1");
       const { result } = renderHook(() => useSearchParam("counter"));
       expect(result.current).toBe(1);
 
-      Object.defineProperty(window, "location", {
-        writable: true,
-        value: { search: "?counter=2" },
-      });
+      mockLocationSearch("?counter=2");
       act(() => {
-        dispatchEvent(new Event(eventName));
+        history[eventName](null, "", "");
       });
       expect(result.current).toBe(2);
     },
