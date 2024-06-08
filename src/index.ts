@@ -140,7 +140,9 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       buildOnError: buildOptions.onError,
       localOnError: localOptions.onError,
     });
-    if (rawSearchParamVal === null) return null;
+    if (rawSearchParamVal === null) {
+      return null;
+    }
 
     return getProcessedSearchParamVal({
       rawSearchParamVal,
@@ -220,7 +222,10 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       getSnapshot,
       getSnapshot,
     );
-    if (rawSearchParamVal === null) return null;
+    if (rawSearchParamVal === null) {
+      return null;
+    }
+
     return getProcessedSearchParamVal({
       rawSearchParamVal,
       buildOnError: buildOptions.onError,
