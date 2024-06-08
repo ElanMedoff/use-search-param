@@ -163,8 +163,7 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
     for (const eventName of customEventNames) {
       const original = history[eventName];
       history[eventName] = function (...args) {
-        const event = new Event(eventName);
-        dispatchEvent(event);
+        dispatchEvent(new Event(eventName));
         return original.apply(this, args);
       };
     }
