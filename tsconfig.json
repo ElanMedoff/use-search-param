@@ -27,5 +27,5 @@
     "noUnusedParameters": true,
     "useUnknownInCatchVariables": true
   },
-  "include": ["src", "decs.d.ts"]
+  "include": ["src"]
 }
