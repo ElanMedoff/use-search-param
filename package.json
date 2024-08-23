@@ -1,6 +1,6 @@
 {
   "name": "use-search-param",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
