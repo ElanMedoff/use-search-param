@@ -6,16 +6,14 @@ describe("getSearchParamFromSearchString", () => {
   const searchParamKey = "val";
 
   it("when there is no search param, it should return null", () => {
-    const result = getSearchParamFromSearchString({
-      searchParamKey,
+    const result = getSearchParamFromSearchString(searchParamKey, {
       searchString: "?counter=1",
     });
     expect(result).toBe(null);
   });
 
   it("when passed a sanitize option, it should use it", () => {
-    const result = getSearchParamFromSearchString({
-      searchParamKey,
+    const result = getSearchParamFromSearchString(searchParamKey, {
       searchString,
       sanitize: (unsanitized) => `${unsanitized}2`,
     });
@@ -23,8 +21,7 @@ describe("getSearchParamFromSearchString", () => {
   });
 
   it("when passed a parse option, it should use it", () => {
-    const result = getSearchParamFromSearchString({
-      searchParamKey,
+    const result = getSearchParamFromSearchString(searchParamKey, {
       searchString,
       parse: (unparsed) => (JSON.parse(unparsed) as number) + 1,
     });
@@ -33,8 +30,7 @@ describe("getSearchParamFromSearchString", () => {
 
   it("when passed an onError, it should call it on error", () => {
     const onError = jest.fn();
-    const result = getSearchParamFromSearchString({
-      searchParamKey,
+    const result = getSearchParamFromSearchString(searchParamKey, {
       searchString,
       onError,
       sanitize: () => {
@@ -48,8 +44,7 @@ describe("getSearchParamFromSearchString", () => {
   it("when pass an onError, it should call it on validation errors", () => {
     const schema = z.number();
     const onError = jest.fn();
-    const result = getSearchParamFromSearchString({
-      searchParamKey,
+    const result = getSearchParamFromSearchString(searchParamKey, {
       searchString: "?val=asdf",
       onError,
       validate: schema.parse,

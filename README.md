@@ -79,15 +79,17 @@ By default, `useSearchParam` will read from `window.location.search` and monkey-
 ```tsx
 // using wouter, for example:
 import { useSearch } from "wouter";
-import { Options } from "use-search-param";
+import {
+  getSearchParamFromSearchString,
+  UseAdaptedSearchParamOptions,
+} from "use-search-param/router-adapter";
 
 export function useAdaptedSearchParam<TVal>(
   searchParamKey: string,
-  options?: Options<TVal> = {},
+  options?: UseAdaptedSearchParamOptions<TVal> = {},
 ) {
   const searchString = useSearch();
-  return getSearchParamFromSearchString({
-    searchParamKey,
+  return getSearchParamFromSearchString(searchParamKey, {
     searchString,
     ...options,
   });

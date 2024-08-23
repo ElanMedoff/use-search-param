@@ -1,38 +1,42 @@
 import { defaultParse } from "./utils";
 import { _getProcessedSearchParamVal, Options } from "./shared";
 
-type GetSearchParamFromSearchStringOptions<TVal> = Pick<
+type ProcessSearchParamValOptions<TVal> = Pick<
   Options<TVal>,
   "sanitize" | "parse" | "validate" | "onError"
-> & {
-  /**
-   * The URL search string to read the search param from.
-   *
-   * Any valid input to the URLSearchParams constructor.
-   *
-   * See MDN's documentation on [URL.search](https://developer.mozilla.org/en-US/docs/Web/API/URL/search) for more info.
-   */
-  searchString: string;
+>;
+
+type GetSearchParamFromSearchStringOptions<TVal> =
+  ProcessSearchParamValOptions<TVal> & {
+    /**
+     * The URL search string to read the search param from.
+     *
+     * Any valid input to the URLSearchParams constructor.
+     *
+     * See MDN's documentation on [URL.search](https://developer.mozilla.org/en-US/docs/Web/API/URL/search) for more info.
+     */
+    searchString: string;
+  };
+type UseAdaptedSearchParamOptions<TVal> = ProcessSearchParamValOptions<TVal>;
+
+function getSearchParamFromSearchString<TVal>(
   /**
    * The name of the URL search param to read from.
    *
    * See MDN's documentation on [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) for more info.
    */
-  searchParamKey: string;
-};
-
-function getSearchParamFromSearchString<TVal>(
-  args: GetSearchParamFromSearchStringOptions<TVal>,
+  searchParamKey: string,
+  options: GetSearchParamFromSearchStringOptions<TVal>,
 ) {
   const parse =
-    args.parse ?? (defaultParse as Required<Options<TVal>>["parse"]);
-  const sanitize = args.sanitize ?? ((unsanitized: string) => unsanitized);
+    options.parse ?? (defaultParse as Required<Options<TVal>>["parse"]);
+  const sanitize = options.sanitize ?? ((unsanitized: string) => unsanitized);
   const validate =
-    args.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
-  const onError = args.onError ?? (() => {});
+    options.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
+  const onError = options.onError ?? (() => {});
 
-  const urlParams = new URLSearchParams(args.searchString);
-  const rawSearchParamVal = urlParams.get(args.searchParamKey);
+  const urlParams = new URLSearchParams(options.searchString);
+  const rawSearchParamVal = urlParams.get(searchParamKey);
   if (rawSearchParamVal === null) {
     return null;
   }
@@ -48,4 +52,7 @@ function getSearchParamFromSearchString<TVal>(
 }
 
 export { getSearchParamFromSearchString };
-export type { GetSearchParamFromSearchStringOptions };
+export type {
+  GetSearchParamFromSearchStringOptions,
+  UseAdaptedSearchParamOptions,
+};
