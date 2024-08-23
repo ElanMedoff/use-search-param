@@ -72,6 +72,28 @@ export const useSearchParam = buildUseSearchParam({
 
 For cases when you want to read from the search param outside a React component, two additional exports are provided: `getSearchParam` and `buildGetSearchParam`. Both have the same function signatures and behavior as their `useSearchParam` and `buildUseSearchParam` counterparts, with one exception: `getSearchParam` has no way to "react" to `popstate` events, unlike `useSearchParam`.
 
+## Adapting `useSearchParam` for your own router
+
+By default, `useSearchParam` will read from `window.location.search` and monkey-patch the global `history` to properly react to `pushState` and `replaceState` events (see the [wouter source code](https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57) for more info on this topic). If you'd rather have your existing router handle rerenders, you can use `getSearchParamFromSearchString` to build your own hook.
+
+```tsx
+// using wouter, for example:
+import { useSearch } from "wouter";
+import { Options } from "use-search-param";
+
+export function useAdaptedSearchParam<TVal>(
+  searchParamKey: string,
+  options?: Options<TVal> = {},
+) {
+  const searchString = useSearch();
+  return getSearchParamFromSearchString({
+    searchParamKey,
+    searchString,
+    ...options,
+  });
+}
+```
+
 ## Options
 
 `useSearchParam` accepts the following options:

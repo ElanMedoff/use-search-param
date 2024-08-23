@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import { defaultParse } from "./helpers";
+import { defaultParse } from "./utils";
 
 describe("defaultParse", () => {
   it.each([
