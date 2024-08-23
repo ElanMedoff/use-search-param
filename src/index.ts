@@ -1,116 +1,17 @@
-import { defaultParse, isWindowUndefined } from "./helpers";
+import { defaultParse } from "./utils";
+import {
+  _getProcessedSearchParamVal,
+  _getRawSearchParamVal,
+  Options,
+} from "./shared";
 import { useSyncExternalStore } from "use-sync-external-store/shim";
 
-interface Options<TVal> {
-  /**
-   * @param `unsanitized` The raw string pulled from the URL search param.
-   * @returns The sanitized string.
-   */
-  sanitize?: (unsanitized: string) => string;
-  /**
-   * @param `unparsed` The result of `sanitize` is passed as `unparsed`.
-   * @returns A parsed value of the type `TVal`, i.e the type of the parsed search param value.
-   */
-  parse?: (unparsed: string) => TVal;
-  /**
-   * `validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `TVal`), throw an error, or return null. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
-   *
-   * @param `unvalidated` The result of `parse` is passed as `unvalidated`.
-   * @returns The `unvalidated` argument now validated as type `TVal`, or `null`.
-   */
-  validate?: (unvalidated: unknown) => TVal | null;
-  /**
-   * A value of type `string` - any valid `string` input to the `URLSearchParams` constructor.
-   *
-   * When passed, `serverSideSearchParams` will be used when `window` is `undefined` to access the URL search param. This is useful for generating content on the server, i.e. with Next.js.
-   */
-  serverSideSearchParams?: string;
-  /**
-   * @param `error` The error caught in one of the `try` `catch` blocks.
-   * @returns
-   */
-  onError?: (error: unknown) => void;
-}
-// TODO: deprecate next major version
-type UseSearchParamOptions<TVal> = Options<TVal>;
-
 type BuildOptions = Pick<Options<unknown>, "sanitize" | "parse" | "onError">;
-// TODO: deprecate next major version
-type BuildUseSearchParamOptions = BuildOptions;
-
-function getProcessedSearchParamVal<TVal>({
-  rawSearchParamVal,
-  sanitize,
-  parse,
-  validate,
-  buildOnError,
-  localOnError,
-}: {
-  rawSearchParamVal: string;
-  sanitize: Required<Options<TVal>>["sanitize"];
-  validate: Required<Options<TVal>>["validate"];
-  buildOnError: Options<TVal>["onError"];
-  localOnError: Options<TVal>["onError"];
-  parse: Required<Options<TVal>>["parse"];
-}) {
-  try {
-    const sanitized = sanitize(rawSearchParamVal);
-    const parsed = parse(sanitized);
-    const validated = validate(parsed);
-
-    return validated;
-  } catch (e) {
-    buildOnError?.(e);
-    localOnError?.(e);
-    return null;
-  }
-}
-
-function getRawSearchParamVal<TVal>({
-  searchParamKey,
-  serverSideSearchParams,
-  buildOnError,
-  localOnError,
-}: {
-  searchParamKey: string;
-  serverSideSearchParams: Options<TVal>["serverSideSearchParams"];
-  buildOnError: Options<TVal>["onError"];
-  localOnError: Options<TVal>["onError"];
-}) {
-  try {
-    let search: string | null;
-    if (isWindowUndefined()) {
-      if (typeof serverSideSearchParams === "string") {
-        search = serverSideSearchParams;
-      } else {
-        search = null;
-      }
-    } else {
-      search = window.location.search;
-    }
-
-    if (search === null) {
-      return null;
-    }
-
-    const urlParams = new URLSearchParams(search);
-    const rawSearchParamVal = urlParams.get(searchParamKey);
-    if (rawSearchParamVal === null) {
-      return null;
-    }
-
-    return rawSearchParamVal;
-  } catch (e) {
-    buildOnError?.(e);
-    localOnError?.(e);
-    return null;
-  }
-}
 
 function buildGetSearchParam(buildOptions: BuildOptions = {}) {
   return function getSearchParam<TVal>(
     /**
-     * The name of the URL search param to read from and write to.
+     * The name of the URL search param to read from.
      *
      * See MDN's documentation on [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) for more info.
      */
@@ -134,7 +35,7 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       localOptions.validate ?? ((unvalidated: unknown) => unvalidated as TVal);
     const { serverSideSearchParams } = localOptions;
 
-    const rawSearchParamVal = getRawSearchParamVal({
+    const rawSearchParamVal = _getRawSearchParamVal({
       searchParamKey,
       serverSideSearchParams,
       buildOnError: buildOptions.onError,
@@ -144,7 +45,7 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
       return null;
     }
 
-    return getProcessedSearchParamVal({
+    return _getProcessedSearchParamVal({
       rawSearchParamVal,
       sanitize,
       parse,
@@ -156,12 +57,16 @@ function buildGetSearchParam(buildOptions: BuildOptions = {}) {
 }
 
 function buildUseSearchParam(buildOptions: BuildOptions = {}) {
-  const nativeEventNames = ["popstate"] as const;
   const customEventNames = ["pushState", "replaceState"] as const;
-  const eventNames = [...nativeEventNames, ...customEventNames];
+  const eventNames = ["popstate", ...customEventNames] as const;
 
-  // from Wouter, originally from https://stackoverflow.com/a/4585031
-  if (typeof history !== "undefined") {
+  // from Wouter: https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57
+  const patchKey = Symbol.for("use-search-param");
+  if (
+    typeof history !== "undefined" &&
+    // @ts-expect-error type issues indexing with a symbol
+    typeof window[patchKey] === "undefined"
+  ) {
     for (const eventName of customEventNames) {
       const original = history[eventName];
       history[eventName] = function (...args) {
@@ -169,9 +74,9 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
         return original.apply(this, args);
       };
     }
+    Object.defineProperty(window, patchKey, { value: true });
   }
 
-  // from Wouter: https://github.com/molefrog/wouter/blob/e106a9dd27cde242b139e27fa8ac2fdb218fc523/packages/wouter/src/use-browser-location.js#L17
   const subscribeToEventUpdates = (callback: (event: Event) => void) => {
     for (const eventName of eventNames) {
       window.addEventListener(eventName, callback);
@@ -185,7 +90,7 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
 
   return function useSearchParam<TVal>(
     /**
-     * The name of the URL search param to read from and write to.
+     * The name of the URL search param to read from.
      *
      * See MDN's documentation on [URLSearchParams](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) for more info.
      */
@@ -211,7 +116,7 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
     const { serverSideSearchParams } = hookOptions;
 
     const getSnapshot = () =>
-      getRawSearchParamVal({
+      _getRawSearchParamVal({
         searchParamKey,
         serverSideSearchParams,
         buildOnError: buildOptions.onError,
@@ -226,7 +131,7 @@ function buildUseSearchParam(buildOptions: BuildOptions = {}) {
       return null;
     }
 
-    return getProcessedSearchParamVal({
+    return _getProcessedSearchParamVal({
       rawSearchParamVal,
       buildOnError: buildOptions.onError,
       localOnError: hookOptions.onError,
@@ -246,6 +151,12 @@ export {
   getSearchParam,
   buildGetSearchParam,
 };
+
+// TODO: deprecate next major version
+type UseSearchParamOptions<TVal> = Options<TVal>;
+// TODO: deprecate next major version
+type BuildUseSearchParamOptions = BuildOptions;
+
 export type {
   UseSearchParamOptions,
   BuildUseSearchParamOptions,

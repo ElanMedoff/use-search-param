@@ -1,11 +1,16 @@
 {
   "name": "use-search-param",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./router-adapter": {
+      "import": "./dist/router-adapter.mjs",
+      "require": "./dist/router-adapter.js",
+      "types": "./dist/router-adapter.d.ts"
     }
   },
   "module": "./dist/index.mjs",
@@ -35,6 +40,7 @@
     "@typescript-eslint/eslint-plugin": "^7.7.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jest": "^28.8.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "husky": "^8.0.0",

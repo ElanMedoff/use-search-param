@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 import { describe, expect, it, beforeEach } from "@jest/globals";
-import * as helpers from "./helpers";
+import * as helpers from "./utils";
 import {
   type BuildOptions,
   type Options,

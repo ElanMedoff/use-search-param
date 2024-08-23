@@ -8,6 +8,12 @@
 <!---->
 <!-- ### Fixed -->
 
+## 2.3.0 - 2024-08-23
+
+### Added
+
+- Add a new export `/router-adapter` to build a hook that reacts to router events using the user's router - an alternative to monkeypatching `history.pushState` and `history.replaceState`.
+
 ## 2.2.0 - 2024-06-07
 
 ### Added

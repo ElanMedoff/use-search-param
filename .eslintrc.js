@@ -6,13 +6,14 @@ const config = {
     "plugin:@typescript-eslint/stylistic-type-checked",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
+    "plugin:jest/recommended",
     "prettier",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: true,
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "jest"],
   ignorePatterns: [
     "**/.eslintrc.js",
     "**/tsup.config.ts",
@@ -21,8 +22,11 @@ const config = {
   ],
   rules: {
     "@typescript-eslint/unbound-method": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "jest/valid-title": "off",
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error",
+    "jest/no-disabled-tests": "error",
   },
   settings: {
     react: {
