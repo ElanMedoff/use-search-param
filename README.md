@@ -74,7 +74,7 @@ For cases when you want to read from the search param outside a React component,
 
 ## Adapting `useSearchParam` for your own router
 
-By default, `useSearchParam` will read from `window.location.search` and monkey-patch the global `history` to properly react to `pushState` and `replaceState` events (see the [wouter source code](https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57) for more info on this topic). If you'd rather have your existing router handle rerenders, you can use `getSearchParamFromSearchString` to build your own hook.
+By default, `useSearchParam` will read from `window.location.search` and monkey-patch the global `history` to properly react to `pushState` and `replaceState` events (see the [wouter source code](https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57) for more info on this topic). If you'd rather avoid the monkey-patching and have your existing router trigger any rerenders on route events, you can use `getSearchParamFromSearchString` to build your own hook:
 
 ```tsx
 // using wouter, for example:
@@ -89,7 +89,7 @@ export function useAdaptedSearchParam<TVal>(
   options?: UseAdaptedSearchParamOptions<TVal> = {},
 ) {
   const searchString = useSearch();
-  return getSearchParamFromSearchString(searchParamKey, {
+  return getSearchParamFromSearchString<TVal>(searchParamKey, {
     searchString,
     ...options,
   });
