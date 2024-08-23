@@ -15,6 +15,8 @@ A React hook to safely and easily read from URL search params.
     <img src="https://elanmed.dev/npm-packages/use-search-param-logo.png" width="500px" />
 </p>
 
+> Docs for version 1.4.4 (the last version before version 2.0.0) can be viewed [here](https://github.com/ElanMedoff/use-search-param/tree/501b792de41de2158d07ebf01f67e6b88951581b)
+
 ## Basic usage
 
 ```tsx
@@ -54,47 +56,6 @@ Once the `c` search param is accessed, the raw string is passed to `sanitize`, t
 If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is called, and `counterVal` is set to `null`. Additionally if `validate` returns `null`, `counter` will be set to `null`.
 
 Otherwise, `counter` is set to the sanitized, parsed, and validated value in the `c` search param.
-
-## Building your own `useSearchParam`
-
-You can build `useSearchParam` yourself with `buildUseSearchParam` to implicitly pass `sanitize`, `parse`, and `onError` options to every instance of the created hook:
-
-```tsx
-import { buildUseSearchParam } from "use-search-param";
-
-// import this instance of `useSearchParam` in your components
-export const useSearchParam = buildUseSearchParam({
-  sanitize: (unsanitized) => yourSanitizer(unsanitized),
-});
-```
-
-## Imperative `getSearchParam`
-
-For cases when you want to read from the search param outside a React component, two additional exports are provided: `getSearchParam` and `buildGetSearchParam`. Both have the same function signatures and behavior as their `useSearchParam` and `buildUseSearchParam` counterparts, with one exception: `getSearchParam` has no way to "react" to `popstate` events, unlike `useSearchParam`.
-
-## Adapting `useSearchParam` for your own router
-
-By default, `useSearchParam` will read from `window.location.search` and monkey-patch the global `history` to properly react to `pushState` and `replaceState` events (see the [wouter source code](https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57) for more info on this topic). If you'd rather avoid the monkey-patching and have your existing router trigger any rerenders on route events, you can use `getSearchParamFromSearchString` to build your own hook:
-
-```tsx
-// using wouter, for example:
-import { useSearch } from "wouter";
-import {
-  getSearchParamFromSearchString,
-  UseAdaptedSearchParamOptions,
-} from "use-search-param/router-adapter";
-
-export function useAdaptedSearchParam<TVal>(
-  searchParamKey: string,
-  options?: UseAdaptedSearchParamOptions<TVal> = {},
-) {
-  const searchString = useSearch();
-  return getSearchParamFromSearchString<TVal>(searchParamKey, {
-    searchString,
-    ...options,
-  });
-}
-```
 
 ## Options
 
@@ -212,6 +173,49 @@ export default function Home({
 ```
 
 Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
+
+## Additional Exports
+
+### Building your own `useSearchParam`
+
+You can build `useSearchParam` yourself with `buildUseSearchParam` to implicitly pass `sanitize`, `parse`, and `onError` options to every instance of the created hook:
+
+```tsx
+import { buildUseSearchParam } from "use-search-param";
+
+// import this instance of `useSearchParam` in your components
+export const useSearchParam = buildUseSearchParam({
+  sanitize: (unsanitized) => yourSanitizer(unsanitized),
+});
+```
+
+### Imperative `getSearchParam`
+
+For cases when you want to read from the search param outside a React component, two additional exports are provided: `getSearchParam` and `buildGetSearchParam`. Both have the same function signatures and behavior as their `useSearchParam` and `buildUseSearchParam` counterparts, with one exception: `getSearchParam` has no way to "react" to `popstate`, `pushState`, and `replaceState` events - unlike `useSearchParam`.
+
+### Adapting `useSearchParam` for your own router
+
+By default, `useSearchParam` will read from `window.location.search` and monkey-patch the global `history` to properly react to `pushState` and `replaceState` events (see the [wouter source code](https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57) for more info on this topic). If you'd rather avoid the monkey-patching and have your existing router trigger any rerenders on route events, you can use `getSearchParamFromSearchString` to build your own hook:
+
+```tsx
+// using wouter, for example:
+import { useSearch } from "wouter";
+import {
+  getSearchParamFromSearchString,
+  UseAdaptedSearchParamOptions,
+} from "use-search-param/router-adapter";
+
+export function useAdaptedSearchParam<TVal>(
+  searchParamKey: string,
+  options?: UseAdaptedSearchParamOptions<TVal> = {},
+) {
+  const searchString = useSearch();
+  return getSearchParamFromSearchString<TVal>(searchParamKey, {
+    searchString,
+    ...options,
+  });
+}
+```
 
 ## Testing
 
