@@ -19,7 +19,7 @@ A React hook to safely and easily read from URL search params.
 
 ---
 
-### ⚠️ Warning: this package is deprecated! ⚠️
+## ⚠️ Warning: this package is deprecated! ⚠️
 
 > Docs for version 2.3.0 (the last version before being deprecated) can be viewed [here](https://github.com/ElanMedoff/use-search-param/blob/1961af2fb42c95aeccf7b37102ba59df232462d2)
 
