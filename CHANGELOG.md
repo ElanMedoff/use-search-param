@@ -8,7 +8,11 @@
 <!---->
 <!-- ### Fixed -->
 
-## 2.3.0 - 2024-08-23
+## 2.3.1 - 2025-04-02
+
+### Fixed
+
+- Add a deprecated notice recommending users to switch to `use-search-param-state`.
 
 ### Added
 
