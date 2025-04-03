@@ -17,7 +17,11 @@ A React hook to safely and easily read from URL search params.
 
 > Docs for version 1.4.4 (the last version before version 2.0.0) can be viewed [here](https://github.com/ElanMedoff/use-search-param/tree/501b792de41de2158d07ebf01f67e6b88951581b)
 
-## ⚠️Warning: this package is deprecated!
+---
+
+## ⚠️Warning: this package is deprecated! ⚠️
+
+> Docs for version 2.3.0 (the last version before being deprecated) can be viewed [here](https://github.com/ElanMedoff/use-search-param/blob/1961af2fb42c95aeccf7b37102ba59df232462d2)
 
 As an alternative, use [`use-search-param-state`](https://github.com/ElanMedoff/use-search-param-state):
 
@@ -48,5 +52,3 @@ are still supported, though note that `serverSideSearchParams` is updated to `se
 Prior to `use-search-param-state` v3.0.0, `useSearchParamState` required being wrapped in a context provider: `SearchParamStateProvider`. For cases where setting the state wasn't necessary, `use-search-param` provided a simpler alternative with the same API - but without a provider wrapping your app.
 
 In v3.0.0, `use-search-param-state` was refactored to remove the need for a context provider. Without a provider, there's no longer a significant difference between `use-search-param-state` and `use-search-param`, and no reason to maintain both libraries.
-
-> Docs for version 2.3.0 (the last version before being deprecated) can be viewed [here](https://github.com/ElanMedoff/use-search-param/blob/1961af2fb42c95aeccf7b37102ba59df232462d2)
