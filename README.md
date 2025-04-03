@@ -17,51 +17,21 @@ A React hook to safely and easily read from URL search params.
 
 > Docs for version 1.4.4 (the last version before version 2.0.0) can be viewed [here](https://github.com/ElanMedoff/use-search-param/tree/501b792de41de2158d07ebf01f67e6b88951581b)
 
-## Basic usage
+## ⚠️Warning: this package is deprecated!
 
-```tsx
-import { useSearchParam } from "use-search-param";
+As an alternative, use [`use-search-param-state`](https://github.com/ElanMedoff/use-search-param-state):
+
+```ts
+import { useSearchParamState } from "use-search-param-state";
 
 function Demo() {
-  const counter = useSearchParam<number>("c");
-  // ...
+  const [counter] = useSearchParamState("c", 0);
 }
 ```
 
-or
+All of the options from `use-search-param`:
 
-```tsx
-import { useSearchParam } from "use-search-param";
-import { z } from "zod";
-
-function Demo() {
-  const counter =
-    useSearchParam("c", {
-      validate: z.number().parse,
-    }) ?? 0;
-  // ...
-}
-```
-
-## Explanation
-
-On the first render, `useSearchParam` will read from the `c` URL search param.
-
-By default, the `c` search param is read using `window.location.search`. If the `window` object is `undefined`, `useSearchParam` will use the `serverSideSearchParams` instead to read from the URL. If `serverSideSearchParams` is also not provided, `counter` will be set to `null`.
-
-If the `c` search param does not exist (i.e. `URLSearchParams.get` returns `null`), `counter` will be set to `null`.
-
-Once the `c` search param is accessed, the raw string is passed to `sanitize`, the output of `sanitize` is passed to `parse`, and finally the output of `parse` is passed to `validate`. Note that `useSearchParam` aims to return a _parsed_ value, not a _stringified_ value!
-
-If `sanitize`, `parse`, or `validate` throw an error, the `onError` option is called, and `counterVal` is set to `null`. Additionally if `validate` returns `null`, `counter` will be set to `null`.
-
-Otherwise, `counter` is set to the sanitized, parsed, and validated value in the `c` search param.
-
-## Options
-
-`useSearchParam` accepts the following options:
-
-```tsx
+```ts
 interface Options<TVal> {
   sanitize?: (unsanitized: string) => string;
   parse?: (unparsed: string) => TVal;
@@ -71,178 +41,12 @@ interface Options<TVal> {
 }
 ```
 
-Note that `sanitize`, `parse`, and `validate` run in the following order:
+are still supported, though note that `serverSideSearchParams` is updated to `serverSideURLSearchParams: URLSearchParams` in `use-search-param-state`
 
-```tsx
-// simplified
-const rawSearchParam = new URLSearchParams(window.location.search).get(
-  searchParamKey,
-);
-const sanitized = options.sanitize(rawSearchParam);
-const parsed = options.parse(sanitized);
-const validated = options.validate(parsed);
+## Why deprecate?
 
-return validated;
-```
+Prior to `use-search-param-state` v3.0.0, `useSearchParamState` required being wrapped in a context provider: `SearchParamStateProvider`. For cases where setting the state wasn't necessary, `use-search-param` provided a simpler alternative with the same API - but without a provider wrapping your app.
 
-### sanitize
+In v3.0.0, `use-search-param-state` was refactored to remove the need for a context provider. Without a provider, there's no longer a significant difference between `use-search-param-state` and `use-search-param`, and no reason to maintain both libraries.
 
-A function with the following type: `(unsanitized: string) => string`.
-
-`sanitize` is called with the raw string pulled from the URL search param.
-
-`sanitize` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When a `sanitize` option is passed to both, only the `sanitize` passed to `useSearchParam` will be called.
-
-`sanitize` has no default value.
-
-### parse
-
-A function with the following type: `(unparsed: string) => TValue`.
-
-The result of `sanitize` is passed as the `unparsed` argument to `parse`.
-
-`parse` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When a `parse` option is passed to both, only the `parse` passed to `useSearchParam` will be called.
-
-`parse` defaults to the following function:
-
-```ts
-function defaultParse(unparsed: string) {
-  // JSON.parse errors on "undefined"
-  if (unparsed === "undefined") return undefined;
-
-  // Number parses "" to 0
-  if (unparsed === "") return "";
-
-  // Number coerces bigints to numbers
-  const maybeNum = Number(unparsed);
-  if (!Number.isNaN(maybeNum)) return maybeNum;
-
-  try {
-    return JSON.parse(unparsed);
-  } catch {
-    return unparsed;
-  }
-}
-```
-
-### validate
-
-A function with the following type: `(unvalidated: unknown) => TVal | null`.
-
-The result of `parse` is passed as the `unvalidated` argument to `validate`.
-
-`validate` is expected to validate and return the `unvalidated` argument passed to it (presumably of type `TVal`), explicitly return `null`, or throw an error. If an error is thrown, `onError` is called and `useSearchParam` returns `null`.
-
-`validate` has no default value.
-
-### onError
-
-A function with the following type: `(error: unknown) => void`.
-
-Most actions in `useSearchParam` are wrapped in a `try` `catch` block - `onError` is called whenever the `catch` block is reached. This includes situations when `sanitize`, `parse`, or `validate` throw an error.
-
-`onError` can be passed directly to `useSearchParam`, or to `buildUseSearchParam`. When an `onError` option is passed to both, both the functions will be called.
-
-### serverSideSearchParams
-
-A value of type `string` - any valid `string` input to the `URLSearchParams` constructor.
-
-When passed, `serverSideSearchParams` will be used when `window` is `undefined` to access the search params. This is useful for generating content on the server, i.e. with Next.js:
-
-```tsx
-import url from "url";
-
-export const getServerSideProps: GetServerSideProps = ({ req }) => {
-  const serverSideSearchParams = url.parse(req.url).query;
-
-  return {
-    props: { serverSideSearchParams },
-  };
-};
-
-export default function Home({
-  serverSideSearchParams,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const counter = useSearchParam<number>("counter", {
-    serverSideSearchParams,
-  });
-
-  // has the correct value for `counter` when rendered on the server
-  return <div>counter: {counter}</div>;
-}
-```
-
-Note that if no `serverSideSearchParams` option is passed and `window` is `undefined`, you may encounter hydration errors.
-
-## Additional Exports
-
-### Building your own `useSearchParam`
-
-You can build `useSearchParam` yourself with `buildUseSearchParam` to implicitly pass `sanitize`, `parse`, and `onError` options to every instance of the created hook:
-
-```tsx
-import { buildUseSearchParam } from "use-search-param";
-
-// import this instance of `useSearchParam` in your components
-export const useSearchParam = buildUseSearchParam({
-  sanitize: (unsanitized) => yourSanitizer(unsanitized),
-});
-```
-
-### Imperative `getSearchParam`
-
-For cases when you want to read from the search param outside a React component, two additional exports are provided: `getSearchParam` and `buildGetSearchParam`. Both have the same function signatures and behavior as their `useSearchParam` and `buildUseSearchParam` counterparts, with one exception: `getSearchParam` has no way to "react" to `popstate`, `pushState`, and `replaceState` events - unlike `useSearchParam`.
-
-### Adapting `useSearchParam` for your own router
-
-By default, `useSearchParam` will read from `window.location.search` and monkey-patch the global `history` to properly react to `pushState` and `replaceState` events (see the [wouter source code](https://github.com/molefrog/wouter/blob/110b6694a9b3220460eed32640fa4778d10bdf52/packages/wouter/src/use-browser-location.js#L57) for more info on this topic). If you'd rather avoid the monkey-patching and have your existing router trigger any rerenders on route events, you can use `getSearchParamFromSearchString` to build your own hook:
-
-```tsx
-// using wouter, for example:
-import { useSearch } from "wouter";
-import {
-  getSearchParamFromSearchString,
-  UseAdaptedSearchParamOptions,
-} from "use-search-param/router-adapter";
-
-export function useAdaptedSearchParam<TVal>(
-  searchParamKey: string,
-  options?: UseAdaptedSearchParamOptions<TVal> = {},
-) {
-  const searchString = useSearch();
-  return getSearchParamFromSearchString<TVal>(searchParamKey, {
-    searchString,
-    ...options,
-  });
-}
-```
-
-## Testing
-
-The best approach to test uses of `useSearchParam` / `getSearchParam` is by mocking the `window.location` property directly in your tests:
-
-```ts
-Object.defineProperty(window, "location", {
-  writable: true,
-  value: { search: "?counter=1" },
-});
-```
-
-If you mutate `window.location` directly, i.e.
-
-```ts
-window.location = { search: "?counter=1" };
-```
-
-You may receive an error that `window.location` is read-only.
-
-Alternatively, you could mock `useSearchParam`/`getSearchParam` itself:
-
-```ts
-import * as useSearchParamWrapper from "use-search-param";
-
-jest.spyOn(useSearchParamWrapper, "useSearchParam").mockReturnValue(1);
-jest.spyOn(useSearchParamWrapper, "getSearchParam").mockReturnValue(1);
-```
-
-But this shadows the actual behavior of `useSearchParam` / `getSearchParam` and any of the options passed, and it may lead to unexpected behavior.
+> Docs for version 2.3.0 (the last version before being deprecated) can be viewed [here](https://github.com/ElanMedoff/use-search-param/blob/1961af2fb42c95aeccf7b37102ba59df232462d2)
